@@ -1,0 +1,237 @@
+#!/usr/bin/env -S uv run --script
+"""Count words in files and directories, excluding Markdown code blocks."""
+
+import sys
+import re
+import json
+import csv
+import argparse
+from pathlib import Path
+from typing import List, Tuple
+
+def count_words(filepath: Path, exclude_code_blocks: bool = True) -> int:
+    """Count words in file, optionally excluding content within ``` code blocks."""
+    try:
+        content = filepath.read_text(encoding='utf-8')
+        
+        if exclude_code_blocks and filepath.suffix in ['.md', '.markdown']:
+            # Remove code blocks (everything between ``` markers)
+            # Using DOTALL flag to match across newlines
+            content = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+        
+        # Split into words and count non-empty strings
+        words = content.split()
+        return len(words)
+    
+    except UnicodeDecodeError:
+        # Skip binary files
+        raise Exception("Binary file")
+    except Exception as e:
+        raise
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Count words in files and directories, excluding Markdown code blocks by default."
+    )
+    
+    parser.add_argument(
+        'path',
+        help='File or directory path to process'
+    )
+    
+    parser.add_argument(
+        '-f', '--format',
+        choices=['text', 'json', 'csv'],
+        default=None,
+        help='Output format (default: text for directories, number only for single files)'
+    )
+    
+    parser.add_argument(
+        '-o', '--output',
+        help='Output file path (default: stdout)'
+    )
+    
+    parser.add_argument(
+        '-e', '--extensions',
+        nargs='+',
+        default=['.md', '.markdown'],
+        help='File extensions to process (default: .md .markdown)'
+    )
+    
+    parser.add_argument(
+        '-r', '--recursive',
+        action='store_true',
+        help='Process directories recursively (default: False)'
+    )
+    
+    parser.add_argument(
+        '--no-exclude-code-blocks',
+        action='store_true',
+        help='Count words in code blocks (default: exclude for .md files)'
+    )
+    
+    return parser.parse_args()
+
+def process_directory(directory: Path, args) -> List[Tuple[Path, int]]:
+    """Process all matching files in a directory."""
+    results = []
+    valid_extensions = set(args.extensions)
+    
+    if args.recursive:
+        pattern = '*'
+        files = directory.rglob(pattern)
+    else:
+        files = directory.iterdir()
+    
+    for file_path in sorted(files):
+        if file_path.is_file() and file_path.suffix in valid_extensions:
+            try:
+                count = count_words(file_path, not args.no_exclude_code_blocks)
+                results.append((file_path, count))
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}", file=sys.stderr)
+    
+    return results
+
+def output_text(results: List[Tuple[Path, int]], args, base_path: Path):
+    """Output results in text format."""
+    output_lines = []
+    total = 0
+    
+    for path, count in results:
+        # Show relative path from the base path
+        try:
+            display_path = path.relative_to(base_path.parent if base_path.is_file() else base_path)
+        except ValueError:
+            display_path = path
+        
+        output_lines.append(f"{display_path}: {count} words")
+        total += count
+    
+    if len(results) > 1:
+        output_lines.append("-" * 40)
+        output_lines.append(f"Total word count: {total} words")
+    
+    output = '\n'.join(output_lines)
+    
+    if args.output:
+        Path(args.output).write_text(output)
+    else:
+        print(output)
+
+def output_json(results: List[Tuple[Path, int]], args, base_path: Path):
+    """Output results in JSON format."""
+    files_data = []
+    total = 0
+    
+    for path, count in results:
+        # Show relative path from the base path
+        try:
+            display_path = str(path.relative_to(base_path.parent if base_path.is_file() else base_path))
+        except ValueError:
+            display_path = str(path)
+        
+        files_data.append({"path": display_path, "words": count})
+        total += count
+    
+    output_data = {
+        "files": files_data,
+        "total": total,
+        "extensions": args.extensions
+    }
+    
+    output = json.dumps(output_data, indent=2)
+    
+    if args.output:
+        Path(args.output).write_text(output)
+    else:
+        print(output)
+
+def output_csv(results: List[Tuple[Path, int]], args, base_path: Path):
+    """Output results in CSV format."""
+    rows = []
+    total = 0
+    
+    for path, count in results:
+        # Show relative path from the base path
+        try:
+            display_path = str(path.relative_to(base_path.parent if base_path.is_file() else base_path))
+        except ValueError:
+            display_path = str(path)
+        
+        rows.append([display_path, count])
+        total += count
+    
+    if args.output:
+        with open(args.output, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Path', 'Words'])
+            writer.writerows(rows)
+            if len(results) > 1:
+                writer.writerow(['Total', total])
+    else:
+        writer = csv.writer(sys.stdout)
+        writer.writerow(['Path', 'Words'])
+        writer.writerows(rows)
+        if len(results) > 1:
+            writer.writerow(['Total', total])
+
+def output_results(results: List[Tuple[Path, int]], args, base_path: Path):
+    """Output results in the specified format."""
+    if args.format == "json":
+        output_json(results, args, base_path)
+    elif args.format == "csv":
+        output_csv(results, args, base_path)
+    else:  # text format (default)
+        output_text(results, args, base_path)
+
+def main():
+    args = parse_arguments()
+    
+    input_path = Path(args.path)
+    
+    if not input_path.exists():
+        print(f"Error: '{args.path}' does not exist")
+        sys.exit(1)
+    
+    if input_path.is_file():
+        # Single file mode
+        try:
+            count = count_words(input_path, not args.no_exclude_code_blocks)
+            
+            # Maintain backward compatibility: if no format specified and no output file,
+            # just print the number
+            if args.format is None and args.output is None:
+                print(count)
+            else:
+                results = [(input_path, count)]
+                output_results(results, args, input_path)
+        
+        except FileNotFoundError:
+            print(f"Error: File '{args.path}' not found.")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error reading file: {e}")
+            sys.exit(1)
+    
+    elif input_path.is_dir():
+        # Directory mode
+        results = process_directory(input_path, args)
+        
+        if not results:
+            print(f"No files with extensions {args.extensions} found in {args.path}")
+            sys.exit(0)
+        
+        # For directory mode, always use formatting
+        if args.format is None:
+            args.format = 'text'
+        
+        output_results(results, args, input_path)
+    
+    else:
+        print(f"Error: '{args.path}' is not a valid file or directory")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
