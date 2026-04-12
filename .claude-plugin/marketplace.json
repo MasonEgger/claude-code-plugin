@@ -11,16 +11,6 @@
       "description": "BPE (Brainstorm-Plan-Execute) development workflow with session tracking and lessons learned"
     },
     {
-      "name": "writing",
-      "source": "./writing",
-      "description": "Technical writing toolkit with tutorial authoring, blog reviews, and Vale-based copy editing"
-    },
-    {
-      "name": "productivity",
-      "source": "./productivity",
-      "description": "Personal productivity commands for journaling, Todoist sync, and discovery call analysis"
-    },
-    {
       "name": "python",
       "source": "./python",
       "description": "Python development standards, toolchain preferences, and coding conventions for modern Python projects"
