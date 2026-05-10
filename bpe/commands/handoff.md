@@ -37,7 +37,7 @@ Include these sections, in this order:
 - Trade-offs the current session deferred — what was chosen, what was rejected, and why.
 
 ### Suggested Skills for the Next Session
-- List the specific skills the next agent should invoke before starting work, e.g. `python:python`, `temporal:temporal-developer`, `bpe:session-management`. The current session knows which skills mattered; the next session benefits from the hint.
+- List the specific skills the next agent should invoke before starting work, e.g. `python:python`, `temporal:temporal-developer`. The current session knows which skills mattered; the next session benefits from the hint.
 - Note any project-stack-specific skill that proved especially useful and why.
 
 ### Pointers, Not Content

@@ -19,9 +19,7 @@ A structured development workflow built around test-driven development with sess
 | `/bpe:session-summary` | Generate a session recap and capture lessons learned |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 
-**Skills:** `session-management` — format specs and workflow for `.ai-sessions/` tracking
-
-The BPE loop: Brainstorm a spec through dialogue, Plan it into right-sized TDD steps, Execute one step at a time, then Review and Record lessons for next session. `/bpe:review` and `/bpe:apply-review` give you an interactive HTML pass over any of the BPE artifacts; `/bpe:handoff` lets you pause mid-flight and pass live conversational state to a fresh agent.
+The BPE loop: Brainstorm a spec through dialogue, Plan it into right-sized TDD steps, Execute one step at a time, then Review and Record lessons for next session. `/bpe:review` and `/bpe:apply-review` give you an interactive HTML pass over any of the BPE artifacts; `/bpe:handoff` lets you pause mid-flight and pass live conversational state to a fresh agent. Format specs and workflow rules for `.ai-sessions/` live in `bpe/references/session-management.md`, read directly by the relevant commands.
 
 ## Installation
 
@@ -65,7 +63,7 @@ To pull the latest changes from this repository:
 - `bpe/.claude-plugin/plugin.json` — BPE plugin manifest
 - `bpe/commands/` — slash commands
 - `bpe/scripts/` — bundled helper scripts (e.g. `review-server.py` for `/bpe:review`)
-- `bpe/skills/session-management/` — session-tracking skill plus reference templates
+- `bpe/references/` — plugin-bundled reference docs that commands read directly (e.g. `session-management.md`)
 
 ## Prerequisites
 

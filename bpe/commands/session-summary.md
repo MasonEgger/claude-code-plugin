@@ -8,9 +8,9 @@ Create a complete session summary and capture lessons learned. This command perf
 1. Generates a session summary file in `.ai-sessions/`
 2. Appends lessons learned to `.ai-sessions/lessons.md`
 
-## Step 1: Load Skill and Setup
+## Step 1: Load the Format Reference and Setup
 
-Invoke the `bpe:session-management` skill via the `Skill` tool to load format specifications and capture rules. Treat the skill as the canonical source for templates, naming conventions, and lesson capture guidance — do not restate or reinterpret its rules in this command.
+Read the canonical format reference at `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. Treat that file as the single source of truth for templates, naming conventions, and lesson capture guidance — do not restate or reinterpret its rules in this command.
 
 If `.ai-sessions/` does not exist, create it:
 ```bash
@@ -24,22 +24,22 @@ date +%Y%m%d-%H%M
 
 ## Step 2: Generate Session Summary
 
-Create `.ai-sessions/session-{timestamp}-{slug}.md` per the naming convention and section template in the skill (`bpe/skills/session-management/references/formats.md`, "Session Summary Template").
+Create `.ai-sessions/session-{timestamp}-{slug}.md` per the naming convention and section template in the format reference ("Session Summary Template" section).
 
 Populate every required section. Pull content from this conversation:
 - Header metadata (date, duration, conversation turns, estimated cost, model)
 - Key actions taken
 - Prompt inventory (table of user prompts → actions → outcomes)
 - Efficiency insights, process improvements, observations
-- Suggested skills for next session (which skills the next `/bpe:execute-plan` should invoke at its hardened skill-loading step)
+- Suggested skills for next session (which skills the next `/bpe:execute-plan` should invoke at its hardened skill-loading step — see "Suggested Skills Populating Rule" in the reference)
 
 If the session has no clear single focus, use `mixed-work` as the slug.
 
 ## Step 3: Capture Lessons Learned
 
-Update `.ai-sessions/lessons.md` per the rules in the skill (`SKILL.md` → "Capturing Lessons" and `references/formats.md` → "Lessons.md Template"). In short:
+Update `.ai-sessions/lessons.md` per the rules in the format reference ("Capturing Lessons" and "Lessons.md Template" sections). In short:
 
-- If `lessons.md` does not exist, initialize it from the template in `references/formats.md`.
+- If `lessons.md` does not exist, initialize it from the template in the reference.
 - Identify specific, actionable lessons from this session — not generic advice.
 - Prepend new lessons to the `## Recent` section with a `(YYYY-MM-DD)` date suffix; cap Recent at 10 entries (move overflow into category-only).
 - Place each lesson under the most specific applicable flat top-level category heading (`## Python`, `## Testing`, etc.) — not nested under a `## Categories` parent. Create new category headings on demand.

@@ -35,7 +35,7 @@ Session artifacts live in `.ai-sessions/` at the project root:
 - **Session summaries** - Individual markdown files capturing what happened each session
 - **lessons.md** - Accumulated cross-session learnings in a hybrid format (recent + categorized)
 
-The execute-plan command automatically reads the most recent session summary for continuity.
+The execute-plan command automatically reads the most recent session summary for continuity. Format specs and workflow rules live in `references/session-management.md`, which the relevant commands read directly. There is intentionally no Skill registered for this — invocation is always via an explicit slash command.
 
 ## Installation
 
