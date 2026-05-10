@@ -1,6 +1,6 @@
 ---
 name: Session Management
-description: This skill should be used when the user asks to "write a session summary", "save lessons learned", "create a session recap", "check session history", "update lessons.md", "what happened last session", "review previous sessions", "start execute-plan", or when referencing ".ai-sessions", "lessons.md", or "previous session". Provides format specifications and workflow guidance for session tracking and cross-session lessons accumulation.
+description: This skill should be used when the user asks to "check session history", "what happened last session", "review previous sessions", "resume previous work", "what did we do last time", "load prior context", "continuing prior work", or "update lessons.md", or when referencing ".ai-sessions", "lessons.md", or "previous session". Provides format specifications and workflow guidance for session tracking and cross-session lessons accumulation. Session summary creation is handled by the /bpe:session-summary command, which loads this skill explicitly for format guidance.
 version: 0.1.0
 ---
 
@@ -14,13 +14,8 @@ Track structured session history and accumulated lessons in the project's `.ai-s
 
 All session artifacts live in `.ai-sessions/` at the project root:
 
-```
-.ai-sessions/
-├── lessons.md                              # Accumulated cross-session learnings
-├── session-20260225-1430-plugin-setup.md   # Individual session summaries
-├── session-20260224-0900-api-refactor.md
-└── ...
-```
+- `.ai-sessions/lessons.md` — accumulated cross-session learnings
+- `.ai-sessions/session-{YYYYMMDD}-{HHMM}-{slug}.md` — individual session summaries (e.g. `session-20260225-1430-plugin-setup.md`)
 
 Create the directory with `mkdir -p .ai-sessions` if it does not exist.
 
@@ -30,21 +25,12 @@ Create the directory with `mkdir -p .ai-sessions` if it does not exist.
 
 Files follow the pattern: `session-{timestamp}-{slug}.md`
 
-- **Timestamp**: Generated via `date +%Y%m%d-%H%M` (always use this command)
-- **Slug**: 2-3 word kebab-case description of the session's primary focus
+- **Timestamp**: Generate via `date +%Y%m%d-%H%M`. Do not substitute `date` invocations or shell time variables.
+- **Slug**: 2-3 word kebab-case description of the session's primary focus. When a session has no clear single focus, use `mixed-work`.
 
-### Required Sections
+### Required Sections, Format Templates, and Lesson Quality Examples
 
-Every session summary includes:
-
-1. **Header** - Date, duration, conversation turns, estimated cost, model
-2. **Key Actions** - Bulleted recap organized by task or phase
-3. **Prompt Inventory** - Table mapping prompts to actions and outcomes
-4. **Efficiency Insights** - What went well, what could improve
-5. **Process Improvements** - Actionable suggestions for future sessions
-6. **Observations** - Patterns, highlights, noteworthy moments
-
-For detailed format templates, category guidelines, and lesson quality examples, consult **`references/formats.md`**.
+Consult **`references/formats.md`** for the full session summary template, the `lessons.md` template, category guidelines, and good/bad lesson examples.
 
 ## Lessons Learned (lessons.md)
 
@@ -69,5 +55,5 @@ When identifying lessons from a session:
 
 ### Integration with BPE Workflow
 
-When running `/bpe:execute-plan`, check for `.ai-sessions/` and read the latest summary for prior context before beginning work.
+Before beginning work in `/bpe:execute-plan`, check whether `.ai-sessions/` exists. If it does, identify the most recent session summary by sorting filenames (the embedded `{YYYYMMDD}-{HHMM}` timestamp makes lexicographic order equal chronological order) — do not rely on filesystem mtime, which can be misleading after edits or git operations. Read that summary in full before beginning implementation.
 

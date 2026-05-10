@@ -48,35 +48,26 @@
 
 ## Lessons.md Template
 
+Use this skeleton when initializing a new `lessons.md`. Category sections are created on demand — the template intentionally does not prescribe a fixed set.
+
 ```markdown
 # Lessons Learned
 
 ## Recent
 <!-- 10 most recent lessons, newest first -->
 - {Most recent lesson} ({YYYY-MM-DD})
-- {Second most recent} ({YYYY-MM-DD})
-- ...
 
-## Python
-- {Python-specific lesson} ({YYYY-MM-DD})
+<!--
+Category sections live below. Create each one only when at least one
+lesson belongs to it. Use the most specific applicable category.
+Common starting points: Python, Testing, Git, Tooling, Architecture,
+Workflow, Debugging. Other valid examples: Infrastructure,
+Documentation, Performance, Security, DevOps, Plugin Development.
+Omit categories with zero entries.
+-->
 
-## Testing
-- {Testing-specific lesson} ({YYYY-MM-DD})
-
-## Git
-- {Git-specific lesson} ({YYYY-MM-DD})
-
-## Tooling
-- {Tooling-specific lesson} ({YYYY-MM-DD})
-
-## Architecture
-- {Architecture-specific lesson} ({YYYY-MM-DD})
-
-## Workflow
-- {Workflow-specific lesson} ({YYYY-MM-DD})
-
-## Debugging
-- {Debugging-specific lesson} ({YYYY-MM-DD})
+## {Category}
+- {Lesson} ({YYYY-MM-DD})
 ```
 
 ### Category Guidelines

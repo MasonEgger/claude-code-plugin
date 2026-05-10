@@ -8,7 +8,7 @@ description: Implement the next unchecked step from plan.md using strict TDD
    - These files complement each other. @todo.md should track the current state of the implementation of @plan.md
 2. Check to see if a directory named `.ai-sessions/` exists
    1. If the directory doesn't exist, do nothing
-   2. If the directory exists, list the files and find the most recent session summary and read it. This is a summary of the previous session and will contain detailed information about what work was completed, and lessons learned in the last session.
+   2. If the directory exists, identify the most recent session summary by sorting filenames lexicographically (the embedded `{YYYYMMDD}-{HHMM}` timestamp makes lexicographic order equal chronological order — do not rely on filesystem mtime). Read that summary in full. It contains detailed information about what work was completed and lessons learned in the previous session.
 3. **Invoke relevant skills via the Skill tool**: For the project's tech stack (per CLAUDE.md and @plan.md), invoke each matching skill via the `Skill` tool BEFORE proceeding to step 4. Examples:
    - Python project → invoke `python:python` (or `python` if unscoped)
    - Temporal project → invoke `temporal:temporal-developer`

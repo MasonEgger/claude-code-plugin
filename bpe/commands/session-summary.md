@@ -67,10 +67,9 @@ After creating the session summary, update `.ai-sessions/lessons.md` with lesson
 
 ## Recent
 <!-- 10 most recent lessons, newest first -->
-
-## Categories
-<!-- Lessons organized by topic -->
 ```
+
+Category sections (e.g. `## Python`, `## Testing`, `## Git`) are flat top-level headings — not nested under a `## Categories` parent. Create each one on demand the first time a lesson belongs in it. See `bpe/skills/session-management/references/formats.md` for the canonical template.
 
 ### Updating lessons.md
 
