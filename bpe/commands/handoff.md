@@ -37,8 +37,8 @@ Include these sections, in this order:
 - Trade-offs the current session deferred — what was chosen, what was rejected, and why.
 
 ### Suggested Skills for the Next Session
-- List the specific skills the next agent should invoke before starting work, e.g. `python:python`, `temporal:temporal-developer`. The current session knows which skills mattered; the next session benefits from the hint.
-- Note any project-stack-specific skill that proved especially useful and why.
+- List the specific skills the next agent should invoke before starting work, selected by what the next step needs — not a log of what this session loaded. Examples: `python:python`, `temporal:temporal-developer`. Include a skill if the continuation will need it (whether or not the current session used it); omit a skill that was useful this session but is irrelevant to the next step. This matches the populating rule in `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
+- Note project-stack-specific skills that the next step will need, with a one-line reason each.
 
 ### Pointers, Not Content
 - Reference PRDs, plans, ADRs by path.
