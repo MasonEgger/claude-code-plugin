@@ -48,7 +48,7 @@
 
 ## Lessons.md Template
 
-Use this skeleton when initializing a new `lessons.md`. Category sections are created on demand — the template intentionally does not prescribe a fixed set.
+Use this skeleton when initializing a new `lessons.md`. Category sections are created on demand — the template intentionally does not prescribe a fixed set. Categories are flat top-level (`##`) headings; do not nest them under a `## Categories` parent.
 
 ```markdown
 # Lessons Learned

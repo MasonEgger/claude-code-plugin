@@ -1,6 +1,6 @@
 ---
 name: Session Management
-description: This skill should be used when the user asks to "check session history", "what happened last session", "review previous sessions", "resume previous work", "what did we do last time", "load prior context", "continuing prior work", or "update lessons.md", or when referencing ".ai-sessions", "lessons.md", or "previous session". Provides format specifications and workflow guidance for session tracking and cross-session lessons accumulation. Session summary creation is handled by the /bpe:session-summary command, which loads this skill explicitly for format guidance.
+description: This skill should be used when the user asks to "check session history", "what happened last session", "review previous sessions", "resume previous work", "what did we do last time", "pick up where we left off", "where did we leave off", "catch me up", "what's the status of this project", "load prior context", "continuing prior work", or "update lessons.md", or when referencing ".ai-sessions", "lessons.md", or "previous session". Provides format specifications and workflow guidance for session tracking and cross-session lessons accumulation. Session summary creation is handled by the /bpe:session-summary command, which loads this skill explicitly for format guidance.
 version: 0.1.0
 ---
 
