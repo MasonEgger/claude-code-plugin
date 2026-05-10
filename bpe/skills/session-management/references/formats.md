@@ -51,7 +51,7 @@
 - ...
 ```
 
-The "Suggested Skills for Next Session" section gives the next `/bpe:execute-plan` run an explicit hint about which skills to invoke at its hardened skill-loading step. Populate it from skills the current session actually relied on, plus any obvious skill the next step will need but has not yet been loaded. Omit the section only if the next session genuinely needs no skills.
+The "Suggested Skills for Next Session" section gives the next `/bpe:execute-plan` run an explicit hint about which skills to invoke at its hardened skill-loading step. Populate it based on what the *next* step needs — not a log of what the current session loaded. Include a skill if the next step will need it (whether or not the current session used it); omit a skill the current session used incidentally if the next step will not need it. For example, if the current session edited Python tooling but the next step is documentation cleanup, omit `python:python` and include only the docs-relevant skills. Omit the section entirely only if the next session genuinely needs no skills.
 
 ## Lessons.md Template
 

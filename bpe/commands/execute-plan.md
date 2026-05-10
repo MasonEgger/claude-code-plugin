@@ -13,6 +13,7 @@ description: Implement the next unchecked step from plan.md using strict TDD
    - Python project → invoke `python:python` (or `python` if unscoped)
    - Temporal project → invoke `temporal:temporal-developer`
    - Available skills are listed in the available-skills system reminder.
+   - If the prior session summary read in step 2 contains a "Suggested Skills for Next Session" section, invoke those skills in addition to the ones derived from the stack. Treat the prior session's recommendation as a hint, not a cap.
 
    Bias toward invoking. If a skill plausibly matches the stack, invoke it — double-loading is harmless, skipping is not. Auto-loaded CLAUDE.md rules (e.g. python.md arriving as a system-reminder) are NOT the same as invoking the skill; the skill carries additional toolchain, workflow, and reference guidance that only loads on invocation.
 

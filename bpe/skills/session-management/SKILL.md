@@ -59,5 +59,5 @@ Before beginning work in `/bpe:execute-plan`, check whether `.ai-sessions/` exis
 
 If the latest summary contains a "Suggested Skills for Next Session" section, treat its entries as inputs to step 3 of `/bpe:execute-plan` (the hardened skill-loading step). Invoke those skills in addition to any the agent identifies from the current tech stack — the previous session's recommendation is a hint, not a cap.
 
-For mid-session, forward-looking baton passes (handing the conversation to a fresh agent without finishing the current work), use `/bpe:handoff` instead. Handoff documents are ephemeral (`mktemp`-based) and live outside `.ai-sessions/`.
+For mid-session, forward-looking baton passes (handing the conversation to a fresh agent without finishing the current work), use `/bpe:handoff` instead. Handoff documents are ephemeral (`mktemp`-based) and live outside `.ai-sessions/`. They are not durable artifacts and are not auto-read by `/bpe:execute-plan` — the next agent must be pointed at the handoff path explicitly (e.g. `Read /tmp/handoff-XXXXXX.md`).
 

@@ -45,6 +45,7 @@ Include these sections, in this order:
 - Reference issues and PRs by URL or `gh` invocation.
 - Reference commits and diffs by SHA, branch range, or `git log`/`git diff` invocation.
 - Reference existing session summaries in `.ai-sessions/` by filename.
+- Reference `.ai-sessions/lessons.md` when a relevant cross-session lesson applies — by filename plus the category heading or quoted lesson, not by restating the lesson body.
 
 ## Anti-Duplication Rule
 
