@@ -1,6 +1,9 @@
 # Mason's Claude Code Plugins
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin repository containing the BPE (Brainstorm-Plan-Execute) development workflow.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin repository. Two plugins are published here under the `mmegger-plugins` marketplace:
+
+- **`bpe`** — Brainstorm-Plan-Execute development workflow with session tracking, HTML artifact review, and conversational handoffs.
+- **`python`** — Python development standards, toolchain preferences, and coding conventions for modern Python projects.
 
 ## BPE (Brainstorm-Plan-Execute)
 
@@ -21,6 +24,12 @@ A structured development workflow built around test-driven development with sess
 
 The BPE loop: Brainstorm a spec through dialogue, Plan it into right-sized TDD steps, Execute one step at a time, then Review and Record lessons for next session. `/bpe:review` and `/bpe:apply-review` give you an interactive HTML pass over any of the BPE artifacts; `/bpe:handoff` lets you pause mid-flight and pass live conversational state to a fresh agent. Format specs and workflow rules for `.ai-sessions/` live in `bpe/references/session-management.md`, read directly by the relevant commands.
 
+## Python Development Standards
+
+A skill that triggers when working with Python projects (`.py` files, `pyproject.toml`, or any Python tooling configuration). Enforces type hints on all public interfaces, RST docstrings, absolute imports, modern Python idioms (PEP 604 union syntax, descriptive names), and a uv-based workflow. Loads reference docs on demand for toolchain configuration (uv, ruff, mypy, pytest, nox, just), PEP 723 inline-metadata CLI scripts, documentation patterns, and the red-green-refactor TDD cycle.
+
+See [`python/README.md`](python/README.md) for the full skill contents.
+
 ## Installation
 
 ### Add the marketplace
@@ -31,12 +40,13 @@ Register this repository as a Claude Code marketplace:
 /plugin marketplace add MasonEgger/claude-code-plugin
 ```
 
-### Install the plugin
+### Install plugins
 
-Once the marketplace is registered, install BPE:
+Once the marketplace is registered, install whichever plugins you want:
 
 ```
 /plugin install bpe@mmegger-plugins
+/plugin install python@mmegger-plugins
 ```
 
 ### Browse available plugins
@@ -64,6 +74,8 @@ To pull the latest changes from this repository:
 - `bpe/commands/` — slash commands
 - `bpe/scripts/` — bundled helper scripts (e.g. `review-server.py` for `/bpe:review`)
 - `bpe/references/` — plugin-bundled reference docs that commands read directly (e.g. `session-management.md`)
+- `python/.claude-plugin/plugin.json` — Python plugin manifest
+- `python/skills/python/` — the `python` skill (SKILL.md plus reference docs for toolchain, CLI scripts, documentation, and TDD workflow)
 
 ## Prerequisites
 

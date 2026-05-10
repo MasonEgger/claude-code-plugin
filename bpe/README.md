@@ -39,7 +39,14 @@ The execute-plan command automatically reads the most recent session summary for
 
 ## Installation
 
-This plugin is deployed via the homedir Ansible playbook. It lives at `.claude/plugins/bpe/` in the homedir repository.
+Install via the marketplace registered in this repo:
+
+```
+/plugin marketplace add MasonEgger/claude-code-plugin
+/plugin install bpe@mmegger-plugins
+```
+
+See the [top-level README](../README.md) for the full plugin list and marketplace details.
 
 ## Reference
 
