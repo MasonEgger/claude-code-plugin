@@ -46,7 +46,11 @@ Read the chosen markdown file. Generate a self-contained HTML file. Constraints:
 - For `spec.md`: anchored TOC, callout boxes for goals/non-goals/constraints/open-questions if those sections exist.
 - For `todo.md`: render as a checklist with grouping by section.
 
-Self-contained: all CSS and any non-server JS inline. No external dependencies, no CDNs.
+**Styling:** Use Tailwind CSS utility classes for layout, typography, and color. Tailwind is auto-injected from CDN by the server — you do not need to add the script tag yourself. You may still include a small `<style>` block for anything Tailwind can't express cleanly (e.g., custom keyframes), but prefer utility classes.
+
+**Mermaid diagrams:** Render any diagram as a fenced code block with the `mermaid` language tag (e.g., a `<pre><code class="language-mermaid">...</code></pre>` block) OR a `<div class="mermaid">...</div>` element. The server auto-converts code blocks and runs Mermaid.js to render them. Do not inline the Mermaid script — it is auto-injected.
+
+**Task list checkboxes:** Render `- [x]` / `- [ ]` items as real `<input type="checkbox">` elements (checked when `[x]`). Do NOT add the `disabled` attribute — they must be clickable. The server strips `disabled` defensively, but emit them enabled.
 
 ## Step 3: Write the HTML and Start the Server
 

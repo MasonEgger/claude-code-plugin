@@ -116,6 +116,76 @@ def make_handler(
     return Handler
 
 
+HEAD_ASSETS = """
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+  window.__bpeMermaid = mermaid;
+</script>
+"""
+
+RUNTIME_HELPERS = """
+<script>
+(function() {
+  function enableCheckboxes() {
+    document.querySelectorAll('input[type="checkbox"][disabled]').forEach(function(cb) {
+      cb.removeAttribute('disabled');
+      cb.classList.add('cursor-pointer');
+    });
+  }
+  function convertMermaidBlocks() {
+    var blocks = document.querySelectorAll('pre > code.language-mermaid, pre > code.lang-mermaid');
+    blocks.forEach(function(code) {
+      var pre = code.parentElement;
+      var container = document.createElement('div');
+      container.className = 'mermaid';
+      container.textContent = code.textContent;
+      pre.parentNode.replaceChild(container, pre);
+    });
+  }
+  function renderMermaid() {
+    if (!window.__bpeMermaid) {
+      setTimeout(renderMermaid, 50);
+      return;
+    }
+    var nodes = document.querySelectorAll('.mermaid:not([data-processed="true"])');
+    if (nodes.length === 0) return;
+    window.__bpeMermaid.run({ nodes: nodes }).catch(function(err) {
+      console.error('Mermaid render failed:', err);
+    });
+  }
+  function init() {
+    enableCheckboxes();
+    convertMermaidBlocks();
+    renderMermaid();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+"""
+
+
+def inject_head_assets(html_text: str) -> str:
+    """Inject Tailwind CDN and Mermaid ESM module into <head> (or top of doc)."""
+    if "</head>" in html_text:
+        return html_text.replace("</head>", HEAD_ASSETS + "</head>", 1)
+    if "<body" in html_text:
+        return html_text.replace("<body", HEAD_ASSETS + "<body", 1)
+    return HEAD_ASSETS + html_text
+
+
+def inject_runtime_helpers(html_text: str) -> str:
+    """Inject checkbox enabler + Mermaid block converter before </body>."""
+    if "</body>" in html_text:
+        return html_text.replace("</body>", RUNTIME_HELPERS + "</body>", 1)
+    return html_text + RUNTIME_HELPERS
+
+
 def inject_save_script(html_text: str, save_url: str) -> str:
     script = f"""
 <script>
@@ -198,6 +268,8 @@ def main() -> None:
     server = HTTPServer((bind_addr, 0), BaseHTTPRequestHandler)
     port = server.server_address[1]
     save_url = f"http://{bind_addr}:{port}/save"
+    html_text = inject_head_assets(html_text)
+    html_text = inject_runtime_helpers(html_text)
     html_with_script = inject_save_script(html_text, save_url).encode("utf-8")
     server.RequestHandlerClass = make_handler(
         html_with_script, feedback_path, source_artifact, shutdown_event
