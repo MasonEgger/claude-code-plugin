@@ -17,6 +17,8 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:commit-msg` | Generate a commit message explaining what was changed |
 | `/bpe:session-summary` | Generate session recap and capture lessons learned |
 | `/bpe:handoff` | Compact the current conversation into an ephemeral handoff document for a fresh agent |
+| `/bpe:review` | Generate an HTML view of `spec.md` / `plan.md` / `todo.md` and serve it locally for visual review with annotations |
+| `/bpe:apply-review` | Load saved review feedback and apply changes to the reviewed artifact |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 
 ## The BPE Loop
