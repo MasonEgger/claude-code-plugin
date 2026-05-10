@@ -14,7 +14,7 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:plan` | Transform spec into implementation roadmap (`plan.md` + `todo.md`) |
 | `/bpe:execute-plan` | Implement one step at a time following strict TDD |
 | `/bpe:gh-issue` | Fetch a GitHub issue and route to brainstorm or plan |
-| `/bpe:commit-msg` | Generate a commit message explaining what was changed |
+| `/bpe:commit-message` | Generate a commit message explaining what was changed |
 | `/bpe:session-summary` | Generate session recap and capture lessons learned |
 | `/bpe:handoff` | Compact the current conversation into an ephemeral handoff document for a fresh agent |
 | `/bpe:review` | Generate an HTML view of `spec.md` / `plan.md` / `todo.md` and serve it locally for visual review with annotations |

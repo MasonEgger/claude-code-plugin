@@ -12,7 +12,7 @@ A structured development workflow built around test-driven development with sess
 | `/bpe:plan` | Transform spec into a TDD implementation roadmap (`plan.md` + `todo.md`) |
 | `/bpe:execute-plan` | Implement the next unchecked step using strict TDD |
 | `/bpe:gh-issue` | Fetch a GitHub issue and route to brainstorm or plan based on detail level |
-| `/bpe:commit-msg` | Generate a commit message explaining what was changed |
+| `/bpe:commit-message` | Generate a commit message explaining what was changed |
 | `/bpe:review` | Generate an HTML view of `spec.md` / `plan.md` / `todo.md` and serve it locally for visual review with annotations |
 | `/bpe:apply-review` | Load saved review feedback and apply changes to the reviewed artifact |
 | `/bpe:handoff` | Compact the current conversation into an ephemeral handoff document for a fresh agent |
