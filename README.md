@@ -80,7 +80,7 @@ To pull the latest changes from this repository:
 ## Prerequisites
 
 - **`/bpe:gh-issue`** — `gh` CLI installed and authenticated
-- **`/bpe:review`** — Python 3 (uses stdlib only; no extra packages)
+- **`/bpe:review`** — Python 3 (uses stdlib only; no extra packages). If `tailscale` is installed and the daemon is up, the review server binds to the local tailnet IP so the page is reachable from other tailnet devices (phone, second laptop). Otherwise it binds to `127.0.0.1`.
 
 ## License
 

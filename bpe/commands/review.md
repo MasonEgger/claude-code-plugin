@@ -67,7 +67,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/review-server.py <html-path> <feedback-pat
 The script:
 
 - Kills any prior `/bpe:review` server via the PID file at `/tmp/bpe-review-server.pid`.
-- Binds to `127.0.0.1` on a random free port.
+- Binds to the local Tailscale IPv4 if `tailscale` is installed and the daemon is up; otherwise falls back to `127.0.0.1`. Picks a random free port either way. Tailscale binding lets the user review on a phone or second laptop without extra configuration.
 - Injects the save JavaScript into the HTML.
 - Opens the URL in the user's default browser.
 - Writes feedback JSON on `POST /save`, then exits.

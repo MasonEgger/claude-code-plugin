@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+import subprocess
 import sys
 import threading
 import webbrowser
@@ -15,6 +17,35 @@ from pathlib import Path
 
 PID_FILE = Path("/tmp/bpe-review-server.pid")
 SHUTDOWN_DELAY_SECONDS = 3
+TAILSCALE_PROBE_TIMEOUT_SECONDS = 2
+
+
+def pick_bind_address() -> str:
+    """Return the local Tailscale IPv4 if the daemon is up, otherwise localhost.
+
+    Reviewing on a phone or another laptop is the common case — when Tailscale
+    is active, bind to the tailnet IP so other devices on the tailnet can reach
+    the review page directly. Falls back silently to 127.0.0.1 if Tailscale is
+    not installed, the daemon is down, or the device is logged out.
+    """
+    if shutil.which("tailscale") is None:
+        return "127.0.0.1"
+    try:
+        result = subprocess.run(
+            ["tailscale", "ip", "-4"],
+            capture_output=True,
+            text=True,
+            timeout=TAILSCALE_PROBE_TIMEOUT_SECONDS,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return "127.0.0.1"
+    if result.returncode != 0:
+        return "127.0.0.1"
+    for line in result.stdout.splitlines():
+        ip = line.strip()
+        if ip:
+            return ip
+    return "127.0.0.1"
 
 
 def kill_existing_server() -> None:
@@ -163,16 +194,22 @@ def main() -> None:
     html_text = html_path.read_text(encoding="utf-8")
     shutdown_event = threading.Event()
 
-    server = HTTPServer(("127.0.0.1", 0), BaseHTTPRequestHandler)
+    bind_addr = pick_bind_address()
+    server = HTTPServer((bind_addr, 0), BaseHTTPRequestHandler)
     port = server.server_address[1]
-    save_url = f"http://127.0.0.1:{port}/save"
+    save_url = f"http://{bind_addr}:{port}/save"
     html_with_script = inject_save_script(html_text, save_url).encode("utf-8")
     server.RequestHandlerClass = make_handler(
         html_with_script, feedback_path, source_artifact, shutdown_event
     )
 
-    url = f"http://127.0.0.1:{port}/"
+    url = f"http://{bind_addr}:{port}/"
     print(f"BPE review server: {url}", flush=True)
+    if bind_addr != "127.0.0.1":
+        print(
+            f"  (bound to Tailscale IP {bind_addr} — reachable from other tailnet devices)",
+            flush=True,
+        )
     print(f"Reviewing: {source_artifact}", flush=True)
     print(f"Feedback will be written to: {feedback_path}", flush=True)
     print("Click Save in the browser when done. Re-run /bpe:review to restart.", flush=True)
