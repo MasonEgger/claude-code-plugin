@@ -57,3 +57,7 @@ When identifying lessons from a session:
 
 Before beginning work in `/bpe:execute-plan`, check whether `.ai-sessions/` exists. If it does, identify the most recent session summary by sorting filenames (the embedded `{YYYYMMDD}-{HHMM}` timestamp makes lexicographic order equal chronological order) — do not rely on filesystem mtime, which can be misleading after edits or git operations. Read that summary in full before beginning implementation.
 
+If the latest summary contains a "Suggested Skills for Next Session" section, treat its entries as inputs to step 3 of `/bpe:execute-plan` (the hardened skill-loading step). Invoke those skills in addition to any the agent identifies from the current tech stack — the previous session's recommendation is a hint, not a cap.
+
+For mid-session, forward-looking baton passes (handing the conversation to a fresh agent without finishing the current work), use `/bpe:handoff` instead. Handoff documents are ephemeral (`mktemp`-based) and live outside `.ai-sessions/`.
+

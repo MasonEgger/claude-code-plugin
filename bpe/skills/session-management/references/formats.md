@@ -44,7 +44,14 @@
 
 - {Interesting patterns, noteworthy moments, or highlights}
 - ...
+
+## Suggested Skills for Next Session
+
+- {Skill name (e.g. `python:python`) — one-line note on why it matters for the likely next step}
+- ...
 ```
+
+The "Suggested Skills for Next Session" section gives the next `/bpe:execute-plan` run an explicit hint about which skills to invoke at its hardened skill-loading step. Populate it from skills the current session actually relied on, plus any obvious skill the next step will need but has not yet been loaded. Omit the section only if the next session genuinely needs no skills.
 
 ## Lessons.md Template
 

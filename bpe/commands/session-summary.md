@@ -31,6 +31,7 @@ Populate every required section. Pull content from this conversation:
 - Key actions taken
 - Prompt inventory (table of user prompts → actions → outcomes)
 - Efficiency insights, process improvements, observations
+- Suggested skills for next session (which skills the next `/bpe:execute-plan` should invoke at its hardened skill-loading step)
 
 If the session has no clear single focus, use `mixed-work` as the slug.
 

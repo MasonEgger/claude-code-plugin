@@ -16,6 +16,7 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:gh-issue` | Fetch a GitHub issue and route to brainstorm or plan |
 | `/bpe:commit-msg` | Generate a commit message explaining what was changed |
 | `/bpe:session-summary` | Generate session recap and capture lessons learned |
+| `/bpe:handoff` | Compact the current conversation into an ephemeral handoff document for a fresh agent |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 
 ## The BPE Loop
