@@ -8,7 +8,9 @@ Create a complete session summary and capture lessons learned. This command perf
 1. Generates a session summary file in `.ai-sessions/`
 2. Appends lessons learned to `.ai-sessions/lessons.md`
 
-## Step 1: Setup
+## Step 1: Load the Format Reference and Setup
+
+Read the canonical format reference at `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. Treat that file as the single source of truth for templates, naming conventions, and lesson capture guidance — do not restate or reinterpret its rules in this command.
 
 If `.ai-sessions/` does not exist, create it:
 ```bash
@@ -22,84 +24,26 @@ date +%Y%m%d-%H%M
 
 ## Step 2: Generate Session Summary
 
-Create `.ai-sessions/session-{timestamp}-{slug}.md` where `{slug}` is a 2-3 word kebab-case description of the session's primary focus.
+Create `.ai-sessions/session-{timestamp}-{slug}.md` per the naming convention and section template in the format reference ("Session Summary Template" section).
 
-The summary MUST include ALL of the following sections:
+Populate every required section. Pull content from this conversation:
+- Header metadata (date, duration, conversation turns, estimated cost, model)
+- Key actions taken
+- Prompt inventory (table of user prompts → actions → outcomes)
+- Efficiency insights, process improvements, observations
+- Suggested skills for next session (which skills the next `/bpe:execute-plan` should invoke at its hardened skill-loading step — see "Suggested Skills Populating Rule" in the reference)
 
-### Header
-```markdown
-# Session Summary: {Descriptive Title}
-**Date**: {YYYY-MM-DD}
-**Duration**: {approximate duration}
-**Conversation Turns**: {count}
-**Estimated Cost**: {estimate based on token usage}
-**Model**: {model used}
-```
-
-### Key Actions
-A brief, bulleted recap of what was accomplished. Organize by task or phase if the session covered multiple areas.
-
-### Prompt Inventory
-A table mapping the user's main prompts/commands to the actions taken:
-
-| Prompt/Command | Action Taken | Outcome |
-|---|---|---|
-
-### Efficiency Insights
-- What went well (efficient approaches, good tool usage)
-- What could have been more efficient
-- Any corrections or course changes mid-session
-
-### Process Improvements
-Specific, actionable suggestions for future sessions.
-
-### Observations
-Any other interesting highlights, patterns noticed, or noteworthy moments.
+If the session has no clear single focus, use `mixed-work` as the slug.
 
 ## Step 3: Capture Lessons Learned
 
-After creating the session summary, update `.ai-sessions/lessons.md` with lessons from this session.
+Update `.ai-sessions/lessons.md` per the rules in the format reference ("Capturing Lessons" and "Lessons.md Template" sections). In short:
 
-### If `lessons.md` does not exist, create it with this structure:
-
-```markdown
-# Lessons Learned
-
-## Recent
-<!-- 10 most recent lessons, newest first -->
-
-## Categories
-<!-- Lessons organized by topic -->
-```
-
-### Updating lessons.md
-
-1. **Identify lessons**: Review the session for reusable insights - things that would help future sessions go more smoothly. These should be specific and actionable, not generic advice. Examples:
-   - "The ruff formatter handles import sorting - no need to configure isort separately"
-   - "Always check for existing .ai-sessions/ before starting execute-plan"
-   - "Use `just check` instead of running linters individually"
-
-2. **Add to Recent section**: Prepend each lesson to the `## Recent` section with a date:
-   ```markdown
-   - {lesson text} ({YYYY-MM-DD})
-   ```
-   Keep only the 10 most recent entries. Move older ones to their category only.
-
-3. **Add to appropriate category**: Place each lesson under a topic heading (create the heading if it doesn't exist). Common categories include:
-   - Python
-   - Testing
-   - Git
-   - Tooling
-   - Architecture
-   - Workflow
-   - Debugging
-
-   Use your judgment for categories. If a lesson fits multiple categories, pick the most specific one. Include the date:
-   ```markdown
-   - {lesson text} ({YYYY-MM-DD})
-   ```
-
-4. **Deduplicate**: If a lesson is substantially similar to an existing one, update the existing entry with the newer/better wording and date rather than adding a duplicate.
+- If `lessons.md` does not exist, initialize it from the template in the reference.
+- Identify specific, actionable lessons from this session — not generic advice.
+- Prepend new lessons to the `## Recent` section with a `(YYYY-MM-DD)` date suffix; cap Recent at 10 entries (move overflow into category-only).
+- Place each lesson under the most specific applicable category heading per the category guidelines in the reference. Create new category headings on demand.
+- Deduplicate against existing entries; update wording and date in place when substantially similar.
 
 ## Step 4: Confirm
 

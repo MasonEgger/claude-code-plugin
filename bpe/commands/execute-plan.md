@@ -6,10 +6,18 @@ description: Implement the next unchecked step from plan.md using strict TDD
 
 1. Read @plan.md and @todo.md
    - These files complement each other. @todo.md should track the current state of the implementation of @plan.md
-2. Check to see if a directory named `.ai-sessions/` exists
-   1. If the directory doesn't exist, do nothing
-   2. If the directory exists, list the files and find the most recent session summary and read it. This is a summary of the previous session and will contain detailed information about what work was completed, and lessons learned in the last session.
-3. **Load relevant skills**: Based on the project's tech stack (from CLAUDE.md and @plan.md), identify any available skills that match the technologies being used (e.g., `temporal-developer` for Temporal projects, `python` for Python projects). Invoke these skills BEFORE beginning implementation so their guidance informs your code.
+2. Read `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` — the canonical reference for the session-tracking rules used in this step and in step 3 below. Then check for `.ai-sessions/`:
+   1. If the directory doesn't exist, do nothing.
+   2. If the directory exists, identify the most recent session summary per the find-most-recent rule in the reference, and read it in full. The summary contains what work was completed and lessons learned in the previous session.
+3. **Invoke relevant skills via the Skill tool**: For the project's tech stack (per CLAUDE.md and @plan.md), invoke each matching skill via the `Skill` tool BEFORE proceeding to step 4. Examples:
+   - Python project → invoke `python:python` (or `python` if unscoped)
+   - Temporal project → invoke `temporal:temporal-developer`
+   - Available skills are listed in the available-skills system reminder.
+   - If the prior session summary read in step 2 contains a "Suggested Skills for Next Session" section, treat its entries as inputs per the rule in the session-management reference loaded in step 2 — invoke them in addition to stack-derived skills.
+
+   Bias toward invoking. If a skill plausibly matches the stack, invoke it — double-loading is harmless, skipping is not. Auto-loaded CLAUDE.md rules (e.g. python.md arriving as a system-reminder) are NOT the same as invoking the skill; the skill carries additional toolchain, workflow, and reference guidance that only loads on invocation.
+
+   Before moving to step 4, make an explicit decision in user-facing text: either "Invoked: <skill names>" or "No matching skill for this stack." Only ask the user if you are genuinely unsure which skill applies.
 4. Open @todo.md and select the first unchecked item to work on.
 5. **CRITICAL**: Open @plan.md and locate the specific step being implemented
    - Find the detailed numbered prompts for this step (e.g., "1. RED: Write tests...", "2. GREEN: Implement...")
@@ -32,6 +40,7 @@ description: Implement the next unchecked step from plan.md using strict TDD
 
 ## Key Requirements:
 - **NEVER** skip or reorder the numbered steps in plan.md
+- **NEVER** skip step 3 (skill loading). Auto-loaded CLAUDE.md rules are not the same as an invoked skill — when in doubt, invoke.
 - **ALWAYS** use the exact file paths specified in the prompts
 - **FOLLOW** the RED-GREEN-REFACTOR cycle as outlined in each step
 - **COMPLETE** all documentation updates mentioned in the step
