@@ -1,6 +1,6 @@
 # Session Management
 
-This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read this file directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It is intentionally not a skill — invocation is always via an explicit slash command.
+This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
 
 ## Purpose
 

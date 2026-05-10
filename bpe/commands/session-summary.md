@@ -42,7 +42,7 @@ Update `.ai-sessions/lessons.md` per the rules in the format reference ("Capturi
 - If `lessons.md` does not exist, initialize it from the template in the reference.
 - Identify specific, actionable lessons from this session — not generic advice.
 - Prepend new lessons to the `## Recent` section with a `(YYYY-MM-DD)` date suffix; cap Recent at 10 entries (move overflow into category-only).
-- Place each lesson under the most specific applicable flat top-level category heading (`## Python`, `## Testing`, etc.) — not nested under a `## Categories` parent. Create new category headings on demand.
+- Place each lesson under the most specific applicable category heading per the category guidelines in the reference. Create new category headings on demand.
 - Deduplicate against existing entries; update wording and date in place when substantially similar.
 
 ## Step 4: Confirm
