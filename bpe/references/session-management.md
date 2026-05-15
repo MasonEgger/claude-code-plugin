@@ -12,8 +12,9 @@ All session artifacts live in `.ai-sessions/` at the project root:
 
 - `.ai-sessions/lessons.md` — accumulated cross-session learnings
 - `.ai-sessions/session-{YYYYMMDD}-{HHMM}-{slug}.md` — individual session summaries (e.g. `session-20260101-0900-plugin-setup.md`)
+- `.ai-sessions/handoffs/handoff-{YYYYMMDD}-{HHMM}-{slug}.md` — short-lived forward-looking documents written by `/bpe:handoff` (see "Handoff files" below)
 
-Create the directory with `mkdir -p .ai-sessions` if it does not exist.
+Create the directory with `mkdir -p .ai-sessions` (or `mkdir -p .ai-sessions/handoffs`) if it does not exist.
 
 ## Session Summary Files
 
@@ -158,4 +159,38 @@ If the latest summary contains a "Suggested Skills for Next Session" section, tr
 
 ### Relationship to `/bpe:handoff`
 
-For mid-session, forward-looking baton passes (handing the conversation to a fresh agent without finishing the current work), use `/bpe:handoff` instead of writing a session summary. Handoff documents are ephemeral (`mktemp`-based) and live outside `.ai-sessions/`. They are not durable artifacts and are not auto-read by `/bpe:execute-plan` — the next agent must be pointed at the handoff path explicitly (e.g. `Read /tmp/handoff-XXXXXX.md`).
+For mid-session, forward-looking baton passes (handing the conversation to a fresh agent without finishing the current work), use `/bpe:handoff` instead of writing a session summary. Handoffs live in `.ai-sessions/handoffs/` so the next agent can find them without being told a path, but they are **not** durable artifacts. They are intended to be deleted once consumed.
+
+## Handoff files
+
+### Naming and location
+
+Handoff files follow the pattern: `.ai-sessions/handoffs/handoff-{timestamp}-{slug}.md`
+
+- **Timestamp**: same `date +%Y%m%d-%H%M` rule as session summaries.
+- **Slug**: 2-3 word kebab-case description of the focus the next session will pick up. Use `general` if there is no clear single focus.
+
+### Lifecycle
+
+Handoffs follow a three-step lifecycle, each step driven by an explicit subcommand:
+
+1. `/bpe:handoff create [focus]` — write the document at the end of a session.
+2. `/bpe:handoff continue` — at the start of the next session, read the document and prime the conversation. This is pure-read; it does not delete the file.
+3. `/bpe:handoff close` — delete the document once the handoff has been picked up and is no longer useful. This is the primary cleanup path.
+
+`/bpe:session-summary` keeps a safety-net scan: at the end of a session, it checks `.ai-sessions/handoffs/` for any leftover `.md` files and prompts the user about cleanup, so stale handoffs do not slip into a commit if `close` was forgotten.
+
+### Cleanup paths
+
+- **Primary**: `/bpe:handoff close` — explicit deletion after the handoff has been consumed.
+- **Safety net**: `/bpe:session-summary` — end-of-session scan that prompts about any remaining handoffs.
+
+In both cases: default to keep on uncertainty; delete only on explicit confirmation.
+
+### Gitignore guidance
+
+`.ai-sessions/handoffs/` may or may not be tracked depending on project preference. If handoffs should never be committed, add `.ai-sessions/handoffs/` to `.gitignore`. Otherwise, lean on the cleanup prompts to remove individual handoffs once consumed.
+
+### Not auto-read
+
+Unlike session summaries, handoffs are **not** auto-read by `/bpe:execute-plan` at startup. The next agent should run `/bpe:handoff continue` to read an existing handoff, then `/bpe:handoff close` once the work has been picked up. If `/bpe:execute-plan` notices a leftover handoff file, it points the user at `/bpe:handoff continue` rather than consuming the file itself.

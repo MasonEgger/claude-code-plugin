@@ -5,7 +5,9 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin repositor
 - **`bpe`** — Brainstorm-Plan-Execute development workflow with session tracking, HTML artifact review, and conversational handoffs.
 - **`python`** — Python development standards, toolchain preferences, and coding conventions for modern Python projects.
 
-## BPE (Brainstorm-Plan-Execute)
+## Plugins
+
+### BPE (Brainstorm-Plan-Execute)
 
 A structured development workflow built around test-driven development with session tracking and lessons learned.
 
@@ -18,17 +20,26 @@ A structured development workflow built around test-driven development with sess
 | `/bpe:commit-message` | Generate a commit message explaining what was changed |
 | `/bpe:review` | Generate an HTML view of `spec.md` / `plan.md` / `todo.md` and serve it locally for visual review with annotations |
 | `/bpe:apply-review` | Load saved review feedback and apply changes to the reviewed artifact |
-| `/bpe:handoff` | Compact the current conversation into an ephemeral handoff document for a fresh agent |
+| `/bpe:handoff` | `create` writes an ephemeral handoff for a fresh agent; `continue` reads an existing one to prime a new session; `close` deletes a consumed handoff |
 | `/bpe:session-summary` | Generate a session recap and capture lessons learned |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 
 The BPE loop: Brainstorm a spec through dialogue, Plan it into right-sized TDD steps, Execute one step at a time, then Review and Record lessons for next session. `/bpe:review` and `/bpe:apply-review` give you an interactive HTML pass over any of the BPE artifacts; `/bpe:handoff` lets you pause mid-flight and pass live conversational state to a fresh agent. Format specs and workflow rules for `.ai-sessions/` live in `bpe/references/session-management.md`, read directly by the relevant commands.
 
-## Python Development Standards
+### Python
 
-A skill that triggers when working with Python projects (`.py` files, `pyproject.toml`, or any Python tooling configuration). Enforces type hints on all public interfaces, RST docstrings, absolute imports, modern Python idioms (PEP 604 union syntax, descriptive names), and a uv-based workflow. Loads reference docs on demand for toolchain configuration (uv, ruff, mypy, pytest, nox, just), PEP 723 inline-metadata CLI scripts, documentation patterns, and the red-green-refactor TDD cycle.
+Opinionated Python development standards enforcing modern toolchain preferences and coding conventions.
 
-See [`python/README.md`](python/README.md) for the full skill contents.
+**Skill:** `python` — Automatically loaded when working with `.py` files, `pyproject.toml`, `noxfile.py`, or any Python packaging.
+
+| Reference | What it covers |
+|---|---|
+| `toolchain.md` | uv, ruff, mypy, pytest, nox, justfiles |
+| `tdd-workflow.md` | TDD cycle with mandatory verification after every change |
+| `cli-scripts.md` | Standalone script conventions (uv inline metadata, `#!/usr/bin/env -S uv run`) |
+| `documentation.md` | RST docstrings, Sphinx compatibility, type hint standards |
+
+Core requirements: type hints everywhere, absolute imports only, RST docstrings on public interfaces, uv-based workflows, ruff for formatting/linting, strict mypy.
 
 ## Installation
 

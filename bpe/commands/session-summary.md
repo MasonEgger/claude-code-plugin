@@ -45,11 +45,16 @@ Update `.ai-sessions/lessons.md` per the rules in the format reference ("Capturi
 - Place each lesson under the most specific applicable category heading per the category guidelines in the reference. Create new category headings on demand.
 - Deduplicate against existing entries; update wording and date in place when substantially similar.
 
-## Step 4: Confirm
+## Step 4: Offer to Clean Up Stale Handoffs
+
+Check `.ai-sessions/handoffs/` for any `.md` files (per the "Handoff files" section of the format reference). For each one present, ask the user whether it can be removed now that this session is wrapping up. Default to keep on uncertainty; delete only on explicit confirmation. This prevents stale handoffs from being accidentally committed alongside the session summary.
+
+## Step 5: Confirm
 
 After completing both files, display:
 - The path to the session summary file
 - How many lessons were captured
 - A brief preview of the lessons added
+- A note about any handoff files that were deleted (or kept) in step 4
 
 Ask the user if they want to adjust anything before the session ends.
