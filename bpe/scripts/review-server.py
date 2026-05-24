@@ -16,8 +16,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 PID_FILE = Path("/tmp/bpe-review-server.pid")
-SHUTDOWN_DELAY_SECONDS = 3
+URL_FILE = Path("/tmp/bpe-review-server.url")  # readable by the /bpe:review command
+SHUTDOWN_DELAY_SECONDS = 5  # give the "Saved" page time to render before quitting
 TAILSCALE_PROBE_TIMEOUT_SECONDS = 2
+SCRIPT_DIR = Path(__file__).resolve().parent
+STYLESHEET = SCRIPT_DIR / "review.css"
+VALID_DECISIONS = frozenset({"ship", "update", "redirect", "reject", "unset"})
 
 
 def pick_bind_address() -> str:
@@ -63,6 +67,39 @@ def write_pid_file() -> None:
     PID_FILE.write_text(str(os.getpid()))
 
 
+def validate_feedback(payload: object) -> str | None:
+    """Return a human-readable error string if the payload doesn't match the
+    /bpe:apply-review contract, or None if it does.
+
+    Defense-in-depth: the injected client JS always produces a valid shape, but
+    /save accepts arbitrary POSTs, so this stops a malformed payload (or one
+    crafted by a third party) from landing in the feedback file where
+    apply-review would then trip over it.
+    """
+    if not isinstance(payload, dict):
+        return "Payload must be a JSON object."
+    sections = payload.get("sections")
+    if not isinstance(sections, list):
+        return "Payload.sections must be a list."
+    for i, sec in enumerate(sections):
+        if not isinstance(sec, dict):
+            return f"sections[{i}] must be an object."
+        for field in ("id", "heading", "decision", "comment"):
+            if field not in sec:
+                return f"sections[{i}] missing field {field!r}."
+            if not isinstance(sec[field], str):
+                return f"sections[{i}].{field} must be a string."
+        if sec["decision"] not in VALID_DECISIONS:
+            return (
+                f"sections[{i}].decision must be one of "
+                f"{sorted(VALID_DECISIONS)!r}; got {sec['decision']!r}."
+            )
+    gc = payload.get("global_comment", "")
+    if not isinstance(gc, str):
+        return "Payload.global_comment must be a string."
+    return None
+
+
 def make_handler(
     html_bytes: bytes,
     feedback_path: Path,
@@ -94,8 +131,16 @@ def make_handler(
                 payload = json.loads(body)
             except json.JSONDecodeError:
                 self.send_response(400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(b"Invalid JSON")
+                self.wfile.write(b"Invalid JSON: body could not be parsed.")
+                return
+            error = validate_feedback(payload)
+            if error is not None:
+                self.send_response(400)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(error.encode("utf-8"))
                 return
             payload["artifact_path"] = source_artifact
             payload["saved_at"] = datetime.now().isoformat()
@@ -120,10 +165,24 @@ HEAD_ASSETS = """
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'default', securityLevel: 'loose' });
   window.__bpeMermaid = mermaid;
 </script>
 """
+
+
+def load_stylesheet() -> str:
+    """Return review.css wrapped in a <style> tag, or empty if missing.
+
+    Inlining the stylesheet keeps the served page fully self-contained — the
+    browser receives one HTML document with all design rules embedded, no
+    external CSS request. review.css is the authoritative design layer; it
+    loads after Tailwind so its semantic classes win the cascade.
+    """
+    if not STYLESHEET.exists():
+        return ""
+    return f"\n<style>\n{STYLESHEET.read_text(encoding='utf-8')}\n</style>\n"
 
 RUNTIME_HELPERS = """
 <script>
@@ -155,10 +214,76 @@ RUNTIME_HELPERS = """
       console.error('Mermaid render failed:', err);
     });
   }
+  function setupScrollSpy() {
+    var sections = Array.prototype.slice.call(document.querySelectorAll('.review-section[id]'));
+    if (sections.length === 0) return;
+    var visible = {};
+    function highlight() {
+      var active = null;
+      sections.forEach(function(sec) {
+        if (visible[sec.id]) {
+          if (!active || sec.getBoundingClientRect().top < active.getBoundingClientRect().top) {
+            active = sec;
+          }
+        }
+      });
+      if (!active) return;
+      document.querySelectorAll('[data-toc-for].is-active').forEach(function(a) {
+        a.classList.remove('is-active');
+      });
+      var link = document.querySelector('[data-toc-for="' + active.id + '"]');
+      if (link) link.classList.add('is-active');
+    }
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) { visible[entry.target.id] = entry.isIntersecting; });
+      highlight();
+    }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+    sections.forEach(function(sec) { observer.observe(sec); });
+  }
+  function setupProgress() {
+    var bar = document.querySelector('.reading-progress');
+    if (!bar) return;
+    function update() {
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var ratio = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
+      bar.style.transform = 'scaleX(' + ratio + ')';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+  function setupDecisionSync() {
+    var radios = document.querySelectorAll('input[data-section-decision]');
+    function sync() {
+      var decided = 0;
+      var seen = {};
+      document.querySelectorAll('.review-section[data-section-id]').forEach(function(sec) {
+        var id = sec.getAttribute('data-section-id');
+        var checked = document.querySelector('[data-section-decision="' + id + '"]:checked');
+        var link = document.querySelector('[data-toc-for="' + id + '"]');
+        if (checked) {
+          sec.setAttribute('data-decision', checked.value);
+          if (link) link.setAttribute('data-decision', checked.value);
+          if (!seen[id]) { decided++; seen[id] = true; }
+        } else {
+          sec.removeAttribute('data-decision');
+          if (link) link.removeAttribute('data-decision');
+        }
+      });
+      var counter = document.querySelector('[data-reviewed-count]');
+      if (counter) counter.textContent = String(decided);
+    }
+    radios.forEach(function(r) { r.addEventListener('change', sync); });
+    sync();
+  }
   function init() {
     enableCheckboxes();
     convertMermaidBlocks();
     renderMermaid();
+    setupScrollSpy();
+    setupProgress();
+    setupDecisionSync();
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -171,12 +296,18 @@ RUNTIME_HELPERS = """
 
 
 def inject_head_assets(html_text: str) -> str:
-    """Inject Tailwind CDN and Mermaid ESM module into <head> (or top of doc)."""
+    """Inject Tailwind, Mermaid, and the inlined review.css into <head>.
+
+    Tailwind first, then review.css, so the authoritative stylesheet wins the
+    cascade for the review chrome while Tailwind remains available for any
+    incidental layout in the rendered content.
+    """
+    assets = HEAD_ASSETS + load_stylesheet()
     if "</head>" in html_text:
-        return html_text.replace("</head>", HEAD_ASSETS + "</head>", 1)
+        return html_text.replace("</head>", assets + "</head>", 1)
     if "<body" in html_text:
-        return html_text.replace("<body", HEAD_ASSETS + "<body", 1)
-    return HEAD_ASSETS + html_text
+        return html_text.replace("<body", assets + "<body", 1)
+    return assets + html_text
 
 
 def inject_runtime_helpers(html_text: str) -> str:
@@ -187,9 +318,17 @@ def inject_runtime_helpers(html_text: str) -> str:
 
 
 def inject_save_script(html_text: str, save_url: str) -> str:
+    # 'ship' is "leave it alone" and 'unset' is "no decision yet" — neither
+    # gives apply-review anything to act on, so they don't need a comment.
+    # update/redirect/reject all need text the consumer can act on; we block
+    # Save until those have comments so /bpe:apply-review never runs on
+    # directionless feedback.
     script = f"""
 <script>
 (function() {{
+  var DECISIONS_REQUIRING_COMMENT = {{ 'update': true, 'redirect': true, 'reject': true }};
+  var SAVE_LABEL = 'Save review';
+
   function collectFeedback() {{
     var sections = [];
     document.querySelectorAll('[data-section-id]').forEach(function(el) {{
@@ -210,29 +349,99 @@ def inject_save_script(html_text: str, save_url: str) -> str:
       global_comment: globalEl ? globalEl.value : ''
     }};
   }}
+
+  function findMissingComments() {{
+    var missing = [];
+    document.querySelectorAll('.review-section[data-section-id]').forEach(function(sec) {{
+      var id = sec.getAttribute('data-section-id');
+      var decisionEl = document.querySelector('[data-section-decision="' + id + '"]:checked');
+      if (!decisionEl) return;
+      if (!DECISIONS_REQUIRING_COMMENT[decisionEl.value]) return;
+      var commentEl = document.querySelector('[data-section-comment="' + id + '"]');
+      var text = commentEl ? commentEl.value.trim() : '';
+      if (text === '') {{
+        missing.push({{ section: sec, comment: commentEl, heading: sec.getAttribute('data-section-heading') || id }});
+      }}
+    }});
+    return missing;
+  }}
+
+  function markMissing(missing) {{
+    // Clear any previous marks first so units that just got a comment lose theirs.
+    document.querySelectorAll('.review-section[data-comment-missing]').forEach(function(s) {{
+      s.removeAttribute('data-comment-missing');
+    }});
+    missing.forEach(function(m) {{
+      m.section.setAttribute('data-comment-missing', 'true');
+    }});
+  }}
+
+  function bindCommentClearers() {{
+    // Clear the missing mark on a unit the moment its comment becomes non-empty,
+    // so the reviewer sees the red highlight disappear as they type.
+    document.querySelectorAll('.review-comment[data-section-comment]').forEach(function(t) {{
+      t.addEventListener('input', function() {{
+        var id = t.getAttribute('data-section-comment');
+        var sec = document.querySelector('.review-section[data-section-id="' + id + '"]');
+        if (sec && t.value.trim() !== '') sec.removeAttribute('data-comment-missing');
+      }});
+    }});
+  }}
+
   function bindSave() {{
     var btn = document.getElementById('bpe-save-btn');
     if (!btn) return;
     btn.addEventListener('click', function() {{
+      var missing = findMissingComments();
+      if (missing.length > 0) {{
+        markMissing(missing);
+        var label = missing.length === 1
+          ? 'Add a comment to 1 unit'
+          : 'Add comments to ' + missing.length + ' units';
+        btn.textContent = label;
+        btn.classList.add('review-save--needs-comments');
+        // Send the reviewer to the first offender.
+        missing[0].section.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+        if (missing[0].comment) setTimeout(function() {{ missing[0].comment.focus(); }}, 250);
+        // Reset the label after a beat so the next click can re-validate.
+        setTimeout(function() {{
+          btn.textContent = SAVE_LABEL;
+          btn.classList.remove('review-save--needs-comments');
+        }}, 3500);
+        return;
+      }}
       btn.disabled = true;
       btn.textContent = 'Saving…';
       fetch('{save_url}', {{
         method: 'POST',
         headers: {{ 'Content-Type': 'application/json' }},
         body: JSON.stringify(collectFeedback())
-      }}).then(function(r) {{ return r.text(); }}).then(function(t) {{
-        document.open(); document.write(t); document.close();
+      }}).then(function(r) {{
+        return r.text().then(function(t) {{ return {{ ok: r.ok, body: t }}; }});
+      }}).then(function(res) {{
+        if (res.ok) {{
+          document.open(); document.write(res.body); document.close();
+        }} else {{
+          btn.disabled = false;
+          btn.textContent = SAVE_LABEL;
+          alert('Save rejected by server: ' + res.body);
+        }}
       }}).catch(function(err) {{
         btn.disabled = false;
-        btn.textContent = 'Save';
+        btn.textContent = SAVE_LABEL;
         alert('Save failed: ' + err);
       }});
     }});
   }}
-  if (document.readyState === 'loading') {{
-    document.addEventListener('DOMContentLoaded', bindSave);
-  }} else {{
+
+  function init() {{
+    bindCommentClearers();
     bindSave();
+  }}
+  if (document.readyState === 'loading') {{
+    document.addEventListener('DOMContentLoaded', init);
+  }} else {{
+    init();
   }}
 }})();
 </script>
@@ -242,29 +451,59 @@ def inject_save_script(html_text: str, save_url: str) -> str:
     return html_text + script
 
 
-def main() -> None:
-    if len(sys.argv) < 4:
-        print(
-            "Usage: review-server.py <html-path> <feedback-output-path> <source-markdown-path>",
-            file=sys.stderr,
-        )
-        sys.exit(2)
+USAGE = (
+    "Usage: review-server.py <html-path> <feedback-output-path> <source-markdown-path> "
+    "[--bind <address>]\n"
+    "  --bind <address>   Force a specific bind address (e.g. 127.0.0.1 to skip the "
+    "Tailscale auto-bind when reviewing locally on a Tailscale-up machine)."
+)
 
-    html_path = Path(sys.argv[1])
-    feedback_path = Path(sys.argv[2])
-    source_artifact = sys.argv[3]
+
+def parse_argv(argv: list[str]) -> tuple[Path, Path, str, str | None]:
+    """Parse argv into (html_path, feedback_path, source_artifact, bind_override).
+
+    `--bind <addr>` is optional and can appear anywhere among the positional
+    args. Anything else after the positionals is rejected so a typo doesn't
+    silently change behavior.
+    """
+    bind_override: str | None = None
+    positionals: list[str] = []
+    i = 0
+    while i < len(argv):
+        token = argv[i]
+        if token == "--bind":
+            if i + 1 >= len(argv):
+                print("--bind requires an address argument.", file=sys.stderr)
+                sys.exit(2)
+            bind_override = argv[i + 1]
+            i += 2
+            continue
+        if token in ("-h", "--help"):
+            print(USAGE)
+            sys.exit(0)
+        positionals.append(token)
+        i += 1
+    if len(positionals) != 3:
+        print(USAGE, file=sys.stderr)
+        sys.exit(2)
+    return Path(positionals[0]), Path(positionals[1]), positionals[2], bind_override
+
+
+def main() -> None:
+    html_path, feedback_path, source_artifact, bind_override = parse_argv(sys.argv[1:])
 
     if not html_path.exists():
         print(f"HTML file not found: {html_path}", file=sys.stderr)
         sys.exit(1)
 
     kill_existing_server()
+    URL_FILE.unlink(missing_ok=True)
     write_pid_file()
 
     html_text = html_path.read_text(encoding="utf-8")
     shutdown_event = threading.Event()
 
-    bind_addr = pick_bind_address()
+    bind_addr = bind_override if bind_override is not None else pick_bind_address()
     server = HTTPServer((bind_addr, 0), BaseHTTPRequestHandler)
     port = server.server_address[1]
     save_url = f"http://{bind_addr}:{port}/save"
@@ -276,22 +515,34 @@ def main() -> None:
     )
 
     url = f"http://{bind_addr}:{port}/"
+    # Write the URL to a well-known file so the /bpe:review command can surface
+    # it to the user reliably, even when stdout from the background process is
+    # not directly readable. Removed on clean shutdown.
+    URL_FILE.write_text(url)
     print(f"BPE review server: {url}", flush=True)
     if bind_addr != "127.0.0.1":
         print(
-            f"  (bound to Tailscale IP {bind_addr} — reachable from other tailnet devices)",
+            f"  (bound to {bind_addr} — open this URL on whichever device you want to review on)",
             flush=True,
         )
     print(f"Reviewing: {source_artifact}", flush=True)
     print(f"Feedback will be written to: {feedback_path}", flush=True)
     print("Click Save in the browser when done. Re-run /bpe:review to restart.", flush=True)
 
-    threading.Thread(target=lambda: webbrowser.open(url), daemon=True).start()
+    # Only auto-open the browser when we are bound to the loopback interface.
+    # On a Tailscale binding the server is just as likely to be remote from the
+    # user's actual browser (e.g. headless dev box, phone reviewing a laptop),
+    # so popping a local browser would land on the wrong device.
+    if bind_addr == "127.0.0.1":
+        threading.Thread(target=lambda: webbrowser.open(url), daemon=True).start()
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
-    shutdown_event.wait()
-    server.shutdown()
-    PID_FILE.unlink(missing_ok=True)
+    try:
+        shutdown_event.wait()
+    finally:
+        server.shutdown()
+        PID_FILE.unlink(missing_ok=True)
+        URL_FILE.unlink(missing_ok=True)
     print(f"Saved feedback to {feedback_path}", flush=True)
 
 
