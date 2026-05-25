@@ -36,6 +36,17 @@ Files follow the pattern: `session-{timestamp}-{slug}.md`
 **Estimated Cost**: {estimate based on token usage}
 **Model**: {model used}
 
+## Goal Context
+
+_Omit this section entirely if the session was not driven by `/goal` / `/bpe:goal`._
+
+- **Condition**: {the exact /goal condition string used, ≤200 chars}
+- **Mode**: {step | section | full}
+- **Outcome**: {converged | cleared by user | failed: <reason> | spun without converging}
+- **Turn count**: {number}
+- **Subagent dispatches**: {number of `bpe:step-executor` invocations}
+- **Steps completed**: {N of M unchecked items checked off}
+
 ## Key Actions
 
 - {Action 1 with brief description of outcome}
@@ -75,6 +86,17 @@ Files follow the pattern: `session-{timestamp}-{slug}.md`
 - {Skill name (e.g. `python:python`) — one-line note on why it matters for the likely next step}
 - ...
 ```
+
+### Goal Context Populating Rule
+
+Include the **Goal Context** section only when the session was driven by `/goal` (typically set up via `/bpe:goal`). Detect this by checking whether a `/goal …` invocation appears in the conversation, or whether the orchestrator-loop pattern from `/bpe:goal` was used. Populate from what's visible in the parent transcript:
+
+- **Condition** — copy the exact condition string from the `/goal` invocation. If multiple goals ran in one session, list each.
+- **Mode** — read from the orchestrator block's "Mode:" line, or infer (`step` if one item, `section` if one labeled group, `full` if the whole plan).
+- **Outcome** — `converged` if the evaluator declared success; `cleared by user` if `/goal clear` was run; `failed` (with reason) if the loop stopped on a subagent `Failure:` report; `spun` if it kept going without making progress.
+- **Turn count / dispatches / steps** — count from the transcript. Approximate is fine.
+
+Omit any individual field that's genuinely unknowable. Omit the whole section if no goal ran.
 
 ### Suggested Skills Populating Rule
 
