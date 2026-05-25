@@ -66,6 +66,16 @@ Include these sections, in this order:
 - Anything awaiting input from the user or another agent.
 - Trade-offs the current session deferred — what was chosen, what was rejected, and why.
 
+### Suggested Goal (optional)
+
+If the next session is a strong candidate for autonomous-mode execution (clear unchecked todo.md items, tests in place, no open design questions), include a line like:
+
+```
+Suggested Goal: /bpe:goal section <name>
+```
+
+or the full pre-built `/goal …` condition if you already know it. Omit this section if the next step needs human judgment, design decisions, or anything a `bpe:step-executor` subagent could not handle on its own. When in doubt, omit — false-positive Suggested Goals waste a run.
+
 ### Suggested Skills for the Next Session
 - List the specific skills the next agent should invoke before starting work, selected by what the next step needs — not a log of what this session loaded. Examples: `python:python`, `temporal:temporal-developer`. Include a skill if the continuation will need it (whether or not the current session used it); omit a skill that was useful this session but is irrelevant to the next step. This matches the populating rule in `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
 - Note project-stack-specific skills that the next step will need, with a one-line reason each.
@@ -113,6 +123,7 @@ Read the chosen handoff in full. Then, in user-facing text, summarize:
 
 - **What the handoff covers**: the current-state snapshot, files in flight, and open decisions/blockers.
 - **Suggested next step**: the focus the handoff was written against and what the writer expected the next session to do first.
+- **Suggested Goal (if present)**: surface the `Suggested Goal:` line from the handoff verbatim so the user can choose to run `/bpe:goal` directly.
 - **Skills to invoke**: enumerate any skills listed in the handoff's "Suggested Skills for the Next Session" section.
 
 ## Step 3: Invoke Suggested Skills

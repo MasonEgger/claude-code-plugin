@@ -20,6 +20,8 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:review` | Generate an HTML view of `spec.md` / `plan.md` / `todo.md` and serve it locally for visual review with annotations |
 | `/bpe:apply-review` | Load saved review feedback and apply changes to the reviewed artifact |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
+| `/bpe:wtf-wid` | WTF was I doing? Tight, fits-on-screen recap of the current session for fast re-entry |
+| `/bpe:goal` | Wrap the BPE loop in a `/goal`-driven autonomous run. Pre-flights safety, emits the orchestrator prompt for copy-paste |
 
 ## The BPE Loop
 
@@ -36,6 +38,40 @@ Session artifacts live in `.ai-sessions/` at the project root:
 - **lessons.md** - Accumulated cross-session learnings in a hybrid format (recent + categorized)
 
 The execute-plan command automatically reads the most recent session summary for continuity. Format specs and workflow rules live in `references/session-management.md`, which the relevant commands read directly. There is intentionally no Skill registered for this — invocation is always via an explicit slash command.
+
+## Autonomous Mode
+
+Requires Claude Code v2.1.139+.
+
+`/bpe:goal` wraps the BPE loop in Claude Code's `/goal` autonomous-execution primitive. The parent session orchestrates; each step is delegated to the `bpe:step-executor` subagent (fresh context per dispatch, no compaction risk). The parent's transcript stays small, the subagent does the work, and `/goal`'s evaluator watches the parent transcript to decide when the run is complete.
+
+```mermaid
+flowchart TD
+    A["/bpe:goal step|section|full"] --> B["Pre-flight checks<br/>(refuses on main, missing files)"]
+    B --> C["Emits /goal &lt;condition&gt; + orchestrator prompt"]
+    C --> D["User pastes /goal block"]
+    D --> E["Parent loop: dispatch one step at a time"]
+    E --> F["Agent(bpe:step-executor)<br/>fresh context, runs TDD, commits, pushes"]
+    F -->|"returns ≤200-word report"| E
+    E --> G{"/goal evaluator:<br/>condition met?"}
+    G -->|no| E
+    G -->|yes| H["Final session-summary + lessons<br/>(parent runs once)"]
+```
+
+Modes:
+
+- `step` (default, safest) — converges after one item.
+- `section <name>` — converges after every item in a labeled section is checked off.
+- `full` — converges only when every item in `todo.md` is checked off and tests pass.
+
+Hard guarantees:
+
+- **Refuses to run on `main`/`master`.** Create a feature branch first.
+- The subagent commits with `git commit -S -F commit-msg.md`, then `git push`. If push fails, it stops cleanly with a `Failure:` report.
+- Each subagent dispatch is a fresh context — no compaction, no /clear required.
+- `/goal clear` is the escape hatch. Subagent reports remain in the transcript for review.
+
+Pair with `/auto` to also suppress per-tool prompts during the run.
 
 ## Installation
 

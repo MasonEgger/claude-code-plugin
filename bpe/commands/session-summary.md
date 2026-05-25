@@ -28,6 +28,7 @@ Create `.ai-sessions/session-{timestamp}-{slug}.md` per the naming convention an
 
 Populate every required section. Pull content from this conversation:
 - Header metadata (date, duration, conversation turns, estimated cost, model)
+- Goal Context (only if a `/goal` ran in this session — see "Goal Context Populating Rule" in the reference; omit the section entirely otherwise)
 - Key actions taken
 - Prompt inventory (table of user prompts → actions → outcomes)
 - Efficiency insights, process improvements, observations
