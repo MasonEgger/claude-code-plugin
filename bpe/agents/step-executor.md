@@ -23,15 +23,18 @@ You are the worker agent for `/bpe:goal` autonomous runs. The parent orchestrato
 
 ## Procedure
 
-Follow `${CLAUDE_PLUGIN_ROOT}/commands/execute-plan.md` as the source of truth for the TDD step itself. Do not re-implement its logic here. After execute-plan finishes the step:
+**How to "follow" a referenced command file.** The steps below reference markdown files at `${CLAUDE_PLUGIN_ROOT}/commands/*.md` and `${CLAUDE_PLUGIN_ROOT}/references/*.md`. "Follow" means: **Read the markdown file with the Read tool, then execute its numbered procedure inline as your own work.** Do NOT attempt to invoke the corresponding slash command (e.g. `/bpe:execute-plan`, `/bpe:session-summary`, `/bpe:commit-message`). You are a subagent with no user-input channel — slash commands cannot be invoked from here. If a procedure step says "use the X tool" or "run command Y", do that directly. If it says "ask the user" (execute-plan steps 6 and 10 do this), see the "No user questions" invariant above.
 
-1. **Branch guard.** Run `git rev-parse --abbrev-ref HEAD` and echo the output in user-facing text. Abort with `Failure:` on `main` or `master`.
-2. **Per-step session summary.** Follow `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` to generate a summary file. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`.
-3. **Commit message.** Follow `${CLAUDE_PLUGIN_ROOT}/commands/commit-message.md` to write `commit-msg.md`.
-4. **Commit.** Stage only the files this step touched (NEVER `git add -A`; NEVER stage `commit-msg.md`). Then `git commit -S -F commit-msg.md`. Echo the resulting short SHA in user-facing text.
-5. **Push.** `git push` to the current branch's upstream. If no upstream is set, `git push -u origin HEAD`. If push fails (auth, conflict, hook), do NOT retry — capture the error verbatim in your report and stop.
-6. **Lessons (optional).** If this step surfaced a genuinely novel, durable lesson, follow the "Capturing Lessons" rules in `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` to append to `.ai-sessions/lessons.md`. Be conservative — bad lessons accumulate fast. Most steps add zero lessons.
-7. **Skip `/init`.** It's too heavy per step. The user runs it manually after the goal converges.
+Now execute, in order:
+
+1. **TDD step.** Read `${CLAUDE_PLUGIN_ROOT}/commands/execute-plan.md` and execute its numbered procedure inline. This is the heart of the work — write the failing test, write minimal code to pass, refactor, mark the todo item.
+2. **Branch guard.** Run `git rev-parse --abbrev-ref HEAD` and echo the output in user-facing text. Abort with `Failure:` on `main` or `master`. (Redundant with the top-of-procedure check; do not skip — defense in depth.)
+3. **Per-step session summary.** Read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`.
+4. **Commit message.** Read `${CLAUDE_PLUGIN_ROOT}/commands/commit-message.md` and execute its procedure inline. The output is `commit-msg.md` at the repo root.
+5. **Commit.** Stage only the files this step touched (NEVER `git add -A`; NEVER stage `commit-msg.md`). Then `git commit -S -F commit-msg.md`. Echo the resulting short SHA in user-facing text.
+6. **Push.** `git push` to the current branch's upstream. If no upstream is set, `git push -u origin HEAD`. If push fails (auth, conflict, hook), do NOT retry — capture the error verbatim in your report and stop.
+7. **Lessons (optional).** If this step surfaced a genuinely novel, durable lesson, read `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` and apply its "Capturing Lessons" rules inline to append to `.ai-sessions/lessons.md`. Be conservative — bad lessons accumulate fast. Most steps add zero lessons.
+8. **Skip `/init`.** It's too heavy per step. The user runs it manually after the goal converges.
 
 ## What the evaluator must see
 

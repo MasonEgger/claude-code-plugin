@@ -2,6 +2,7 @@
 
 ## Recent
 <!-- 10 most recent lessons, newest first -->
+- Inside an autonomous `/goal` loop (parent session) or any subagent dispatch, slash commands cannot be invoked — there is no user-input channel. The model's natural "I'll run `/bpe:session-summary` now" silently fails and the loop exits without converging. Procedures intended for autonomous or subagent contexts must say "Read the command file with the Read tool, then execute its procedure inline," not "follow /bpe:X" — which is ambiguous and the model interprets as a slash-command call. (2026-05-29)
 - The `/goal` evaluator sees only the parent transcript — not subagent tool calls. When designing autonomous loops with subagents, every fact needed to verify the goal condition (test output, git status, todo.md delta, commit SHA) must be echoed in user-facing text by either the subagent's final report or the parent orchestrator's verification calls. (2026-05-24)
 - Plugin subagents inherit auto-mode from the parent session — `permissionMode` in plugin agent frontmatter is explicitly IGNORED. There is no per-agent way to enable auto mode. Tell users to run `/auto` first in the parent session. The classifier auto-pauses after 3 consecutive or 20 total blocked tool calls, so a runaway loop can't silently spam destructive calls. (2026-05-24)
 - Subagents CAN invoke the `Skill` tool at runtime (empirically verified, undocumented). `Skill(skill="plugin:name")` works with the fully-qualified form; bare-name form not yet tested. Skill body arrives as an injected human-role message in the subagent's context — treat as binding instructions for the remainder of that subagent turn. (2026-05-24)
@@ -11,8 +12,6 @@
 - Before bumping a plugin version, check the live committed version with `git show HEAD:<manifest>`. One uncommitted working set should bump once, not per-file or per-feature. Easy to double-bump when adding multiple components in the same session. (2026-05-24)
 - When edits happen outside the user's CWD (e.g. a sibling repo), state the absolute path of the parent repo on every file change — not just once. Quiet single mentions get lost in long sessions and the user ends up running `git status` in the wrong dir and concluding nothing happened. (2026-05-24)
 - Don't bulk-apply a user-articulated rule before confirming target scope. If the user says "we should not X in the skill" without naming a skill, ask which one — the prompt may have been misrouted from another session, or apply only to a specific artifact. Building memory files, rule files, and audit subagents before clarification wastes ~thousands of tokens and gets reverted. (2026-05-24)
-- `chrome-headless-shell --virtual-time-budget=Nms` advances setTimeout/setInterval clocks deterministically during a screenshot, so transient UI states (warning labels that reset after a timeout, async-rendered Mermaid diagrams, scroll-spy-triggered classes) can be captured at exact moments without race conditions. Pair with `--no-sandbox --disable-gpu` on Linux. (2026-05-24)
-
 <!--
 Category sections live below. Create each one only when at least one
 lesson belongs to it. Use the most specific applicable category.
@@ -40,6 +39,7 @@ Omit categories with zero entries.
 - The `/goal` evaluator sees only the parent transcript — subagent tool calls are invisible. Subagent reports must surface every verification fact (test output, git status, commit SHA) in user-facing text. (2026-05-24)
 - `/goal` is cleared by `/clear`; auto-compaction with `/goal` is undocumented. Sub-agent-per-step architecture sidesteps both: fresh context per dispatch, parent stays tiny, compaction never triggers. (2026-05-24)
 - Triggering rules for skills (auto-fire, be "pushy") do not apply to slash commands (user-typed, slash menu) or plugin agents (explicit dispatch). Commands and agents need clarity and disambiguation, not push. (2026-05-24)
+- Inside an autonomous `/goal` loop or any subagent dispatch, slash commands cannot be invoked — there is no user-input channel. Procedures must say "Read the command file and execute its procedure inline," not "follow /bpe:X." Otherwise the model attempts the slash invocation, it silently fails, and the loop exits. (2026-05-29)
 
 ## Tooling
 

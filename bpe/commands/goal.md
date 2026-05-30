@@ -76,14 +76,16 @@ Print exactly this block to the user, with substitutions made and inside a singl
 ````
 /goal <condition from step 2>
 
-You are the orchestrator for an autonomous BPE run. Until the goal condition is met, repeat this micro-loop:
+You are the orchestrator for an autonomous BPE run. You cannot invoke slash commands from inside an autonomous /goal loop — there is no user-input channel. When a step below tells you to "execute the procedure in commands/X.md", that means: Read the markdown file at that path with the Read tool, then execute its numbered procedure inline as your own work. Do NOT try to type `/bpe:session-summary` (or any other slash command) — it will not fire and you may exit the loop.
+
+Until the goal condition is met, repeat this micro-loop:
 
 1. Run `git rev-parse --abbrev-ref HEAD` and echo the output. Abort if the branch is `main` or `master`.
 2. Read the first unchecked `- [ ]` item in todo.md. If none remain, run the final wrap-up (step 6) and stop.
-3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked item in todo.md. Follow your system prompt's procedure exactly. Return the structured report."
+3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked item in todo.md. Follow your system prompt's procedure exactly — that includes reading commands/execute-plan.md, commands/session-summary.md, and commands/commit-message.md and executing their procedures inline rather than trying to invoke them as slash commands. Return the structured report."
 4. Parse the report. If it is a `Failure:` block, echo the failure verbatim and stop — the user will intervene.
 5. After a successful report, echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text so the /goal evaluator can verify. Then loop to step 2.
-6. Final wrap-up (only when no unchecked items remain): run `<test-cmd>` once more and echo the result; run `/bpe:session-summary` to capture the overall goal-driven session; echo `git log <branch>..HEAD` to show what landed.
+6. Final wrap-up (only when no unchecked items remain): run `<test-cmd>` once more and echo the result; read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline to capture the overall goal-driven session (do NOT type `/bpe:session-summary`); echo `git log <branch>..HEAD` to show what landed.
 
 Mode: <mode>. Test command: <test-cmd>. Branch: <branch>.
 
