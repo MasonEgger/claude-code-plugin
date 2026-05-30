@@ -48,8 +48,8 @@ Requires Claude Code v2.1.139+.
 ```mermaid
 flowchart TD
     A["/bpe:goal step|section|full"] --> B["Pre-flight checks<br/>(refuses on main, missing files)"]
-    B --> C["Emits two paste-blocks:<br/>orchestrator instructions + /goal &lt;condition&gt;"]
-    C --> D["User pastes orchestrator block, then /goal command"]
+    B --> C["Emits single /goal block:<br/>condition + trimmed orchestrator playbook"]
+    C --> D["User pastes the block"]
     D --> E["Parent loop: dispatch one step at a time"]
     E --> F["Agent(bpe:step-executor)<br/>fresh context, runs TDD, commits, pushes"]
     F -->|"returns ≤200-word report"| E
@@ -71,9 +71,14 @@ Hard guarantees:
 - Each subagent dispatch is a fresh context — no compaction, no /clear required.
 - `/goal clear` is the escape hatch. Subagent reports remain in the transcript for review.
 
-`/bpe:goal` emits two paste-blocks because `/goal`'s condition argument is capped at 4000 characters and the orchestrator instructions don't fit. Paste Block 1 (orchestrator) as a normal message first; then paste Block 2 (`/goal <condition>`) to activate the autonomous loop.
+`/bpe:goal` emits one paste-block: the `/goal` condition followed by a trimmed orchestrator playbook, together under `/goal`'s 4000-character cap. The condition leads (the evaluator focuses on its AND clauses); the playbook follows in the same message and tells the parent session how to drive the loop.
 
-Put your session into auto mode before pasting Block 1 so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).
+Two hard contracts the orchestrator enforces:
+
+- **Every commit in the loop must include a new `.ai-sessions/session-*.md`.** After each subagent dispatch, the orchestrator runs `git show --stat --name-only HEAD | grep '.ai-sessions/session-.*\.md'` and stops on miss.
+- **Exactly one commit per dispatch.** No follow-ups, no fixups, no amends, no `--no-verify`. If a subagent discovers something needs fixing after its commit lands, that's a `Failure:` — the orchestrator does NOT make the follow-up.
+
+Put your session into auto mode before pasting so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).
 
 ## Installation
 

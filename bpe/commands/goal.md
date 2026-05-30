@@ -1,5 +1,5 @@
 ---
-description: Autonomous-mode BPE run via /goal. Modes — step (default, safest) | section <name> | full. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and emits two paste-blocks (orchestrator instructions + /goal activation) that dispatch the bpe:step-executor subagent per todo.md item. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
+description: Autonomous-mode BPE run via /goal. Modes — step (default, safest) | section <name> | full. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and emits a single copy-paste /goal block (condition + trimmed orchestrator playbook + per-commit verification) that dispatches the bpe:step-executor subagent per todo.md item. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
 argument-hint: [step | section <name> | full]
 ---
 
@@ -69,53 +69,42 @@ Every item under the "<name>" section of todo.md is checked off; <test-cmd> exit
 Every item in todo.md is checked off; <test-cmd> exits 0 with no failing tests; git status --short is empty; all commits are pushed to origin/<branch>; .ai-sessions/lessons.md contains any new lessons captured during the run.
 ```
 
-## Step 3: Emit Two Blocks (Orchestrator + Goal)
+## Step 3: Emit the Combined `/goal` Block
 
-The `/goal` command has a documented 4000-character cap on the condition argument. The orchestrator instructions are ~4400 chars on their own, so they CANNOT ride along inside a single `/goal` call. Emit TWO separate fenced blocks for the user to paste in sequence:
+The orchestrator instructions are trimmed to ~1500 chars so they fit alongside the ~250-char condition inside `/goal`'s 4000-character cap. The user pastes ONE block. The condition leads (the evaluator focuses on its AND clauses); the orchestrator playbook follows in the same message.
 
-1. **Block 1 (orchestrator instructions)** — pasted first as a normal message. Tells the parent session what to do, then waits for `/goal` activation.
-2. **Block 2 (`/goal` activation)** — pasted second as a slash command. Sets the short condition and kicks off autonomous cycling.
-
-Print Block 1 first inside its own fenced code block, then Block 2 inside a separate fenced block.
-
-**Block 1 — paste this first as a normal message:**
-
-````
-You are about to be put into a /goal-driven autonomous BPE run. Read these orchestrator instructions and acknowledge briefly, but WAIT — do not start any work until I send the /goal command in my next message.
-
-You cannot invoke slash commands from inside an autonomous /goal loop — there is no user-input channel. When a step below tells you to "execute the procedure in commands/X.md", that means: Read the markdown file at that path with the Read tool, then execute its numbered procedure inline as your own work. Do NOT try to type `/bpe:session-summary` (or any other slash command) — it will not fire and you may exit the loop.
-
-Until the goal condition is met, repeat this micro-loop:
-
-1. Run `git rev-parse --abbrev-ref HEAD` and echo the output. Abort if the branch is `main` or `master`.
-2. Read the first unchecked `- [ ]` item in todo.md. If none remain, run the final wrap-up (step 6) and stop.
-3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked item in todo.md. Follow your system prompt's procedure exactly — that includes reading commands/execute-plan.md, commands/session-summary.md, and commands/commit-message.md and executing their procedures inline rather than trying to invoke them as slash commands. You own the full commit ritual: per-step session summary (mandatory, stage it), commit-message, commit, and push. The orchestrator does NOT commit on your behalf. Return the structured report only after pushing successfully — otherwise return a Failure: block."
-4. Parse the report. If it is a `Failure:` block, echo the failure verbatim and stop — the user will intervene. Do NOT attempt to commit or push yourself; the subagent owns that work and any retry should also be the subagent's (or the user's) call.
-5. After a successful report, echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text so the /goal evaluator can verify. Then loop to step 2.
-6. Final wrap-up (only when no unchecked items remain): run `<test-cmd>` once more and echo the result; read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline to capture the overall goal-driven session (do NOT type `/bpe:session-summary`); echo `git log <branch>..HEAD` to show what landed.
-
-Mode: <mode>. Test command: <test-cmd>. Branch: <branch>.
-
-Hard rules for you, the orchestrator:
-- NEVER run `/clear` or `/compact`. Both kill the active /goal session. You don't need them — the subagent architecture keeps your context tiny (one report per step).
-- If 50 successful dispatches have completed and the goal is still unmet, stop with an explicit "dispatch cap reached" message — something is probably looping.
-- If you notice your own context climbing unexpectedly (a subagent returned far more than the 200-word report cap, or you've been forced to echo huge git diffs), stop and tell the user to re-fire with a tighter scope. Do not attempt to compact your way out.
-
-Escape hatch: the user can type `/goal clear` at any time to stop the autonomous loop. Subagent reports remain in the transcript for later review.
-
-Reply with: "Orchestrator instructions received. Standing by for /goal command."
-````
-
-**Block 2 — paste this second to activate the loop:**
+Print exactly this block inside one fenced code block so it can be copied in one motion. Substitute `<condition>`, `<mode>`, `<test-cmd>`, and `<branch>` from steps 1–2.
 
 ````
 /goal <condition from step 2>
+
+You're the orchestrator for an autonomous BPE run. Loop until the goal condition above is met.
+
+CRITICAL CONTRACT — every commit in this loop MUST include a new `.ai-sessions/session-*.md` file. The subagent generates it; you verify it landed. Pre-commit hooks reject commits without one, and the file is how the user re-enters this work later — non-negotiable.
+
+CRITICAL CONTRACT — each dispatch produces EXACTLY ONE commit. No follow-ups, no fixups, no amends, no `--no-verify`. If a subagent reports needing a follow-up to fix something it discovered post-commit, that's a `Failure:` — do NOT make the follow-up on its behalf, do NOT re-dispatch for cleanup. Stop the loop; the user resolves.
+
+Per loop:
+
+1. `git rev-parse --abbrev-ref HEAD` — abort if `main` or `master`.
+2. Read the first `- [ ]` in `todo.md`. If none remain, run final wrap-up: `<test-cmd>`, then echo `git log <branch>..HEAD`, then stop.
+3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked `todo.md` item per your system prompt. CRITICAL: (a) you MUST generate a new `.ai-sessions/session-*.md` for this step and stage it in your commit, (b) you MUST regenerate `commit-msg.md` fresh — never reuse stale content from a prior commit, (c) you get EXACTLY ONE commit per dispatch — fold any fixes into the main commit before committing; once `git commit` succeeds you cannot fix anything in this dispatch. Return the structured report only after pushing successfully — otherwise return a `Failure:` block."
+4. Parse the report. `Failure:` → echo verbatim, stop.
+5. VERIFY: run `git show --stat --name-only HEAD | grep -E '^\.ai-sessions/session-.*\.md$'`. If grep returns nothing, the subagent's commit is missing its session summary — echo "BPE rule violation: commit missing .ai-sessions/session-*.md" and stop the loop.
+6. Echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text (the /goal evaluator only sees the parent transcript). Loop to step 2.
+
+Hard rules:
+- NEVER `/clear` or `/compact` — kills the active /goal.
+- NEVER commit on the subagent's behalf, even on `Failure:`.
+- Stop after 50 successful dispatches with "dispatch cap reached".
+
+Mode: <mode>. Test: <test-cmd>. Branch: <branch>.
 ````
 
-After both blocks, print this single-line reminder:
+After the block, print this single-line reminder:
 
 ```
-Put your session into auto mode before pasting Block 1, so subagent tool calls don't prompt you mid-loop.
+Put your session into auto mode before pasting, so subagent tool calls don't prompt you mid-loop.
 ```
 
 ## Step 4: Do NOT Run It Yourself
