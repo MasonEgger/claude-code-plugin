@@ -1,5 +1,5 @@
 ---
-description: Autonomous-mode BPE run via /goal. Modes — step (default, safest) | section <name> | full. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and emits a copy-paste /goal block that dispatches the bpe:step-executor subagent per todo.md item. Requires Claude Code v2.1.139+; pair with /auto for unattended execution.
+description: Autonomous-mode BPE run via /goal. Modes — step (default, safest) | section <name> | full. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and emits two paste-blocks (orchestrator instructions + /goal activation) that dispatch the bpe:step-executor subagent per todo.md item. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
 argument-hint: [step | section <name> | full]
 ---
 
@@ -69,14 +69,21 @@ Every item under the "<name>" section of todo.md is checked off; <test-cmd> exit
 Every item in todo.md is checked off; <test-cmd> exits 0 with no failing tests; git status --short is empty; all commits are pushed to origin/<branch>; .ai-sessions/lessons.md contains any new lessons captured during the run.
 ```
 
-## Step 3: Emit the Orchestrator Block
+## Step 3: Emit Two Blocks (Orchestrator + Goal)
 
-Print exactly this block to the user, with substitutions made and inside a single fenced code block so it can be copied in one motion:
+The `/goal` command has a documented 4000-character cap on the condition argument. The orchestrator instructions are ~4400 chars on their own, so they CANNOT ride along inside a single `/goal` call. Emit TWO separate fenced blocks for the user to paste in sequence:
+
+1. **Block 1 (orchestrator instructions)** — pasted first as a normal message. Tells the parent session what to do, then waits for `/goal` activation.
+2. **Block 2 (`/goal` activation)** — pasted second as a slash command. Sets the short condition and kicks off autonomous cycling.
+
+Print Block 1 first inside its own fenced code block, then Block 2 inside a separate fenced block.
+
+**Block 1 — paste this first as a normal message:**
 
 ````
-/goal <condition from step 2>
+You are about to be put into a /goal-driven autonomous BPE run. Read these orchestrator instructions and acknowledge briefly, but WAIT — do not start any work until I send the /goal command in my next message.
 
-You are the orchestrator for an autonomous BPE run. You cannot invoke slash commands from inside an autonomous /goal loop — there is no user-input channel. When a step below tells you to "execute the procedure in commands/X.md", that means: Read the markdown file at that path with the Read tool, then execute its numbered procedure inline as your own work. Do NOT try to type `/bpe:session-summary` (or any other slash command) — it will not fire and you may exit the loop.
+You cannot invoke slash commands from inside an autonomous /goal loop — there is no user-input channel. When a step below tells you to "execute the procedure in commands/X.md", that means: Read the markdown file at that path with the Read tool, then execute its numbered procedure inline as your own work. Do NOT try to type `/bpe:session-summary` (or any other slash command) — it will not fire and you may exit the loop.
 
 Until the goal condition is met, repeat this micro-loop:
 
@@ -94,14 +101,21 @@ Hard rules for you, the orchestrator:
 - If 50 successful dispatches have completed and the goal is still unmet, stop with an explicit "dispatch cap reached" message — something is probably looping.
 - If you notice your own context climbing unexpectedly (a subagent returned far more than the 200-word report cap, or you've been forced to echo huge git diffs), stop and tell the user to re-fire with a tighter scope. Do not attempt to compact your way out.
 
-Escape hatch: type `/goal clear` at any time to stop the autonomous loop. Subagent reports remain in the transcript for later review.
+Escape hatch: the user can type `/goal clear` at any time to stop the autonomous loop. Subagent reports remain in the transcript for later review.
+
+Reply with: "Orchestrator instructions received. Standing by for /goal command."
 ````
 
-After the block, print this reminder (two lines, exactly):
+**Block 2 — paste this second to activate the loop:**
+
+````
+/goal <condition from step 2>
+````
+
+After both blocks, print this single-line reminder:
 
 ```
-Run `/auto` first — the subagent inherits the parent session's auto-mode setting; there is no per-agent configuration. Without it, every tool call inside each dispatch will prompt you.
-Then paste the /goal block above. Auto mode's classifier auto-pauses after 3 consecutive or 20 total blocks, so a runaway loop can't silently spam destructive calls.
+Put your session into auto mode before pasting Block 1, so subagent tool calls don't prompt you mid-loop.
 ```
 
 ## Step 4: Do NOT Run It Yourself

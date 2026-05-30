@@ -48,8 +48,8 @@ Requires Claude Code v2.1.139+.
 ```mermaid
 flowchart TD
     A["/bpe:goal step|section|full"] --> B["Pre-flight checks<br/>(refuses on main, missing files)"]
-    B --> C["Emits /goal &lt;condition&gt; + orchestrator prompt"]
-    C --> D["User pastes /goal block"]
+    B --> C["Emits two paste-blocks:<br/>orchestrator instructions + /goal &lt;condition&gt;"]
+    C --> D["User pastes orchestrator block, then /goal command"]
     D --> E["Parent loop: dispatch one step at a time"]
     E --> F["Agent(bpe:step-executor)<br/>fresh context, runs TDD, commits, pushes"]
     F -->|"returns ≤200-word report"| E
@@ -71,7 +71,9 @@ Hard guarantees:
 - Each subagent dispatch is a fresh context — no compaction, no /clear required.
 - `/goal clear` is the escape hatch. Subagent reports remain in the transcript for review.
 
-Pair with `/auto` to also suppress per-tool prompts during the run.
+`/bpe:goal` emits two paste-blocks because `/goal`'s condition argument is capped at 4000 characters and the orchestrator instructions don't fit. Paste Block 1 (orchestrator) as a normal message first; then paste Block 2 (`/goal <condition>`) to activate the autonomous loop.
+
+Put your session into auto mode before pasting Block 1 so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).
 
 ## Installation
 
