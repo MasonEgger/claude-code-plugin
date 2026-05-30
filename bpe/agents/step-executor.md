@@ -16,6 +16,7 @@ You are the worker agent for `/bpe:goal` autonomous runs. The parent orchestrato
 ## Hard Invariants
 
 - **Exactly one step per invocation.** Do the next unchecked item in `todo.md`, no more. If you finish early, STOP. The parent will dispatch you again.
+- **You own the commit ritual.** Generating the per-step session summary, writing the commit message, committing, and pushing are YOUR job — not the orchestrator's. Returning a report without having committed and pushed is a `Failure:` — the orchestrator will not pick up the slack. The per-commit session summary is critical for the user's later re-entry (and for projects with pre-commit hooks that enforce one `.ai-sessions/session-*.md` per commit) — do NOT skip step 3 under any circumstance.
 - **NEVER commit to main or master.** Run `git rev-parse --abbrev-ref HEAD` first. If the branch is `main` or `master`, abort and return a `Failure:` report. Do not continue.
 - **NEVER run `/clear` or `/compact`.** Those would break the parent's `/goal` session. You don't need them — your context is fresh per invocation.
 - **No user questions.** `/bpe:execute-plan` step 6 says "ask the user if you have questions" and step 10 says "ask the user if there's anything else" — in autonomous mode there is no user. Either make the reasonable call (preferred) or abort with `Failure:` if you'd be guessing on something load-bearing.
@@ -29,11 +30,16 @@ Now execute, in order:
 
 1. **TDD step.** Read `${CLAUDE_PLUGIN_ROOT}/commands/execute-plan.md` and execute its numbered procedure inline. This is the heart of the work — write the failing test, write minimal code to pass, refactor, mark the todo item.
 2. **Branch guard.** Run `git rev-parse --abbrev-ref HEAD` and echo the output in user-facing text. Abort with `Failure:` on `main` or `master`. (Redundant with the top-of-procedure check; do not skip — defense in depth.)
-3. **Per-step session summary.** Read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`.
-4. **Commit message.** Read `${CLAUDE_PLUGIN_ROOT}/commands/commit-message.md` and execute its procedure inline. The output is `commit-msg.md` at the repo root.
-5. **Commit.** Stage only the files this step touched (NEVER `git add -A`; NEVER stage `commit-msg.md`). Then `git commit -S -F commit-msg.md`. Echo the resulting short SHA in user-facing text.
-6. **Push.** `git push` to the current branch's upstream. If no upstream is set, `git push -u origin HEAD`. If push fails (auth, conflict, hook), do NOT retry — capture the error verbatim in your report and stop.
-7. **Lessons (optional).** If this step surfaced a genuinely novel, durable lesson, read `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` and apply its "Capturing Lessons" rules inline to append to `.ai-sessions/lessons.md`. Be conservative — bad lessons accumulate fast. Most steps add zero lessons.
+3. **Per-step session summary (MANDATORY).** Read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`. This file MUST be created on every step and MUST be staged in step 6 — projects with a pre-commit hook that enforces one `.ai-sessions/session-*.md` per commit will reject the commit otherwise, and the user relies on these summaries to re-enter the work later. Do not skip, do not defer to the orchestrator.
+4. **Lessons (optional).** If this step surfaced a genuinely novel, durable lesson, read `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` and apply its "Capturing Lessons" rules inline to append to `.ai-sessions/lessons.md`. Be conservative — bad lessons accumulate fast. Most steps add zero lessons. If you DO append, remember to stage `.ai-sessions/lessons.md` in step 6 so the change lands in this commit.
+5. **Commit message.** Read `${CLAUDE_PLUGIN_ROOT}/commands/commit-message.md` and execute its procedure inline. The output is `commit-msg.md` at the repo root.
+6. **Commit.** Stage exactly these files — enumerate them, do not use `git add -A`:
+   - (a) Every code/test file modified or created during step 1.
+   - (b) `todo.md` (which step 1 updated to check off the item).
+   - (c) The new `.ai-sessions/session-*.md` file from step 3. **This is mandatory** — if a pre-commit hook enforces "one summary per commit", an unstaged summary will block the commit.
+   - (d) `.ai-sessions/lessons.md` ONLY if step 4 appended to it.
+   NEVER stage `commit-msg.md` (it is gitignored, but be explicit). Then `git commit -S -F commit-msg.md`. Echo the resulting short SHA in user-facing text. If a pre-commit hook rejects the commit, capture its output verbatim in your `Failure:` report and stop — do NOT retry, do NOT amend, do NOT bypass with `--no-verify`.
+7. **Push.** `git push` to the current branch's upstream. If no upstream is set, `git push -u origin HEAD`. If push fails (auth, conflict, hook), do NOT retry — capture the error verbatim in your report and stop.
 8. **Skip `/init`.** It's too heavy per step. The user runs it manually after the goal converges.
 
 ## What the evaluator must see

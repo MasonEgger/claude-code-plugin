@@ -82,8 +82,8 @@ Until the goal condition is met, repeat this micro-loop:
 
 1. Run `git rev-parse --abbrev-ref HEAD` and echo the output. Abort if the branch is `main` or `master`.
 2. Read the first unchecked `- [ ]` item in todo.md. If none remain, run the final wrap-up (step 6) and stop.
-3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked item in todo.md. Follow your system prompt's procedure exactly — that includes reading commands/execute-plan.md, commands/session-summary.md, and commands/commit-message.md and executing their procedures inline rather than trying to invoke them as slash commands. Return the structured report."
-4. Parse the report. If it is a `Failure:` block, echo the failure verbatim and stop — the user will intervene.
+3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked item in todo.md. Follow your system prompt's procedure exactly — that includes reading commands/execute-plan.md, commands/session-summary.md, and commands/commit-message.md and executing their procedures inline rather than trying to invoke them as slash commands. You own the full commit ritual: per-step session summary (mandatory, stage it), commit-message, commit, and push. The orchestrator does NOT commit on your behalf. Return the structured report only after pushing successfully — otherwise return a Failure: block."
+4. Parse the report. If it is a `Failure:` block, echo the failure verbatim and stop — the user will intervene. Do NOT attempt to commit or push yourself; the subagent owns that work and any retry should also be the subagent's (or the user's) call.
 5. After a successful report, echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text so the /goal evaluator can verify. Then loop to step 2.
 6. Final wrap-up (only when no unchecked items remain): run `<test-cmd>` once more and echo the result; read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline to capture the overall goal-driven session (do NOT type `/bpe:session-summary`); echo `git log <branch>..HEAD` to show what landed.
 
