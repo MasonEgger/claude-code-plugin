@@ -80,20 +80,27 @@ Print exactly this block inside one fenced code block so it can be copied in one
 
 You're the orchestrator for an autonomous BPE run. Loop until the goal condition above is met.
 
+CRITICAL CONTRACT — SEQUENTIAL DISPATCHES ONLY. You MUST dispatch EXACTLY ONE `Agent(subagent_type="bpe:step-executor")` per turn. NEVER fire multiple dispatches in a single message. NEVER fire dispatches in parallel. After ONE dispatch returns its report and you verify it, YOUR TURN ENDS — the /goal evaluator runs, and if the condition isn't met a NEW turn begins with ONE new dispatch. Despite the Agent tool's standard guidance about parallel dispatches for independent work, todo.md items are NOT independent: they share todo.md state, git state, and the test suite. Parallel dispatches CORRUPT all three — subagents race on checkmarks, commits land out of order, verification cannot gate red-test commits because HEAD becomes whichever finished last. SERIALIZATION IS THE SAFETY MODEL. Do not optimize it away.
+
 CRITICAL CONTRACT — every commit in this loop MUST include a new `.ai-sessions/session-*.md` file. The subagent generates it; you verify it landed. Pre-commit hooks reject commits without one, and the file is how the user re-enters this work later — non-negotiable.
 
 CRITICAL CONTRACT — each dispatch produces EXACTLY ONE commit. No follow-ups, no fixups, no amends, no `--no-verify`. If a subagent reports needing a follow-up to fix something it discovered post-commit, that's a `Failure:` — do NOT make the follow-up on its behalf, do NOT re-dispatch for cleanup. Stop the loop; the user resolves.
 
-Per loop:
+Per turn (one dispatch only):
 
 1. `git rev-parse --abbrev-ref HEAD` — abort if `main` or `master`.
 2. Read the first `- [ ]` in `todo.md`. If none remain, run final wrap-up: `<test-cmd>`, then echo `git log <branch>..HEAD`, then stop.
-3. Dispatch `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked `todo.md` item per your system prompt. CRITICAL: (a) you MUST generate a new `.ai-sessions/session-*.md` for this step and stage it in your commit, (b) you MUST regenerate `commit-msg.md` fresh — never reuse stale content from a prior commit, (c) you get EXACTLY ONE commit per dispatch — fold any fixes into the main commit before committing; once `git commit` succeeds you cannot fix anything in this dispatch. Return the structured report only after pushing successfully — otherwise return a `Failure:` block."
-4. Parse the report. `Failure:` → echo verbatim, stop.
-5. VERIFY: run `git show --stat --name-only HEAD | grep -E '^\.ai-sessions/session-.*\.md$'`. If grep returns nothing, the subagent's commit is missing its session summary — echo "BPE rule violation: commit missing .ai-sessions/session-*.md" and stop the loop.
-6. Echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text (the /goal evaluator only sees the parent transcript). Loop to step 2.
+3. Dispatch EXACTLY ONE `Agent(subagent_type="bpe:step-executor")` with this prompt: "Execute the next unchecked `todo.md` item per your system prompt. CRITICAL: (a) you MUST generate a new `.ai-sessions/session-*.md` for this step and stage it in your commit, (b) you MUST regenerate `commit-msg.md` fresh — never reuse stale content from a prior commit, (c) you get EXACTLY ONE commit per dispatch — fold any fixes into the main commit before committing; once `git commit` succeeds you cannot fix anything in this dispatch, (d) you MUST verify the project's test suite exits 0 IMMEDIATELY before staging — never commit a red suite. Return the structured report only after pushing successfully — otherwise return a `Failure:` block."
+4. Parse the report. `Failure:` → echo verbatim, stop the loop.
+5. VERIFY the dispatch against the SHA in its report — NOT against HEAD, which is unreliable if anything raced:
+   a. Parse the `Commit:` field from the report → `<reported-sha>`.
+   b. Run `git rev-parse HEAD` and confirm it equals `<reported-sha>`. If not, HEAD moved between dispatch and verification — either parallel dispatches occurred or an unexpected commit landed. Echo `BPE rule violation: HEAD moved during verification (HEAD=<actual>, reported=<reported-sha>)` and STOP the loop.
+   c. Run `git show --stat --name-only <reported-sha> | grep -E '^\.ai-sessions/session-.*\.md$'`. If grep returns nothing, echo `BPE rule violation: commit <reported-sha> missing .ai-sessions/session-*.md` and STOP.
+   d. Parse the `Tests:` field from the report. If it does NOT show exit code 0 (e.g. `pytest -q → 0 (12 passed)`), the subagent shipped a red suite — echo `BPE rule violation: commit <reported-sha> shipped non-green tests: <tests-field>` and STOP.
+6. Echo `git log -1 --format="%h %s"` and `git status --short` in user-facing text (the /goal evaluator only sees the parent transcript). YOUR TURN ENDS HERE — do not dispatch anything else. The /goal evaluator runs next; if the condition is not met, a new turn starts at step 1.
 
 Hard rules:
+- NEVER dispatch multiple subagents in a single turn — SEQUENTIAL ONLY.
 - NEVER `/clear` or `/compact` — kills the active /goal.
 - NEVER commit on the subagent's behalf, even on `Failure:`.
 - Stop after 50 successful dispatches with "dispatch cap reached".

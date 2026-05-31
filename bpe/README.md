@@ -73,9 +73,10 @@ Hard guarantees:
 
 `/bpe:goal` emits one paste-block: the `/goal` condition followed by a trimmed orchestrator playbook, together under `/goal`'s 4000-character cap. The condition leads (the evaluator focuses on its AND clauses); the playbook follows in the same message and tells the parent session how to drive the loop.
 
-Two hard contracts the orchestrator enforces:
+Three hard contracts the orchestrator enforces:
 
-- **Every commit in the loop must include a new `.ai-sessions/session-*.md`.** After each subagent dispatch, the orchestrator runs `git show --stat --name-only HEAD | grep '.ai-sessions/session-.*\.md'` and stops on miss.
+- **SEQUENTIAL DISPATCHES ONLY.** Exactly one `Agent(subagent_type="bpe:step-executor")` per turn. The Agent tool's standard guidance encourages parallel dispatches for independent work; that guidance does NOT apply here because todo.md items share state (todo.md checkmarks, git state, the test suite). Parallel dispatches corrupt all three. The orchestrator block emitted by `/bpe:goal` explicitly forbids parallel dispatches; the subagent has a defense-in-depth pre-flight that aborts on a non-empty `git status --short` (which a concurrent subagent would leave).
+- **Every commit in the loop must include a new `.ai-sessions/session-*.md`.** After each subagent dispatch, the orchestrator parses the `Commit:` SHA from the report and verifies that exact commit (not `HEAD`, which is unreliable if anything raced) contains a session summary. Stops on miss.
 - **Exactly one commit per dispatch.** No follow-ups, no fixups, no amends, no `--no-verify`. If a subagent discovers something needs fixing after its commit lands, that's a `Failure:` — the orchestrator does NOT make the follow-up.
 
 Put your session into auto mode before pasting so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).

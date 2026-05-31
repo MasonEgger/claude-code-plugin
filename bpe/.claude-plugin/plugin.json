@@ -1,6 +1,6 @@
 {
   "name": "bpe",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "BPE (Brainstorm-Plan-Execute) development workflow with session tracking and lessons learned",
   "author": {
     "name": "Mason Egger",
