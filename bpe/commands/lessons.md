@@ -47,6 +47,14 @@ View and manage accumulated lessons from `.ai-sessions/lessons.md`.
      ```
      Append to the file if it already exists. Then remove the pruned lessons from lessons.md.
    - `promote` - Identify lessons that appear broadly applicable or have been validated across multiple sessions. For each promotable lesson, classify its destination:
+
+     **Pre-flight — version-control guard (REFUSE on failure).** Before doing any classification work, run:
+     ```bash
+     git -C ~/.claude/rules rev-parse --show-toplevel 2>/dev/null
+     ```
+     If this exits non-zero or returns nothing, the rules destination is not version-controlled — promotions would be lost on re-provision. Refuse to continue with: "`~/.claude/rules` is not in a git repo. Promotions to global rules would not be backed up. Fix your dotfiles setup so `~/.claude/rules` is symlinked (or copied) from a version-controlled source, then re-run." Skip the rest of promote.
+     
+     Otherwise, classify destinations:
      1. **Project-local**: Lessons specific to this codebase (architecture decisions, project-specific conventions, repo-specific workflows) → add to the project's `CLAUDE.md`.
      2. **Global**: Lessons that apply across all projects (language standards, tooling preferences, general workflow patterns) → add to the matching file in `~/.claude/rules/`. Read the existing rule files in `~/.claude/rules/*.md` to find the best fit by topic. If no existing rule file is a good fit, suggest creating a new one with appropriate `paths:` frontmatter (e.g., `paths: ["**/*.py"]` for Python-specific rules).
      
@@ -61,7 +69,15 @@ View and manage accumulated lessons from `.ai-sessions/lessons.md`.
      ## ~/.claude/rules/deployment.md (new file)
      - [lesson] — reason a new rule file is needed
      ```
-     Ask the user to confirm, adjust destinations, or skip individual lessons before making any changes. After confirmed promotions are applied, remove the promoted lessons from lessons.md.
+     Ask the user to confirm, adjust destinations, or skip individual lessons before making any changes. After confirmed promotions are applied:
+     1. Remove the promoted lessons from `.ai-sessions/lessons.md`.
+     2. Append a provenance record to `.ai-sessions/lessons-pruned.md` under a `## Promoted <date>` heading — one bullet per lesson with its destination, matching how `prune` records dispositions. Use `date +%Y-%m-%d` for the heading. Example:
+        ```
+        ## Promoted 2026-06-10
+        - [lesson text] — promoted to ~/.claude/rules/python.md
+        - [lesson text] — promoted to project CLAUDE.md
+        ```
+        Append to the file if it already exists; create it otherwise. This is the only durable record of what came from where after `lessons.md` loses the entry.
 
 ## Output Format
 
