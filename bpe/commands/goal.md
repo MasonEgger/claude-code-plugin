@@ -1,21 +1,21 @@
 ---
-description: Autonomous-mode BPE run via /goal. Modes — step (default, safest) | section <name> | full. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and emits a single copy-paste /goal block (condition + trimmed orchestrator playbook + per-commit verification) that dispatches the bpe:step-executor subagent per todo.md item. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
-argument-hint: [step | section <name> | full]
+description: Autonomous-mode BPE run via /goal. Modes — full (default) | section <name> | step. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and writes the assembled /goal block (condition + trimmed orchestrator playbook + per-commit verification) to goal.md at the repo root for you to paste. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
+argument-hint: [full | section <name> | step]
 ---
 
 # BPE Autonomous Goal
 
 Set up a `/goal`-driven autonomous BPE run. The parent session orchestrates; each step is executed by the `bpe:step-executor` subagent (fresh context per step, no compaction risk). The parent's transcript stays tiny, and the `/goal` evaluator watches it for completion.
 
-**Requires Claude Code v2.1.139+.** Pairs well with `/auto`. The `/goal` command itself must still be run by the user — slash commands cannot invoke other slash commands programmatically, so this command builds the full `/goal` invocation and prints it in a fenced block for one-keystroke copy-paste.
+**Requires Claude Code v2.1.139+.** Pairs well with `/auto`. The `/goal` command itself must still be run by the user — slash commands cannot invoke other slash commands programmatically, so this command writes the assembled `/goal` invocation to `goal.md` at the repo root and you paste it from there.
 
 ## Mode Routing
 
 Parse `$ARGUMENTS`:
 
-- `step` (or empty) — autonomous through ONE step. Safest. Default.
+- empty or `full` — autonomous to the end of `todo.md`. **Default.** Use when you trust the plan and have time / quota.
 - `section <name>` — autonomous through one labeled section of `todo.md`. A section is a top-level Markdown heading or an explicit comment block like `<!-- section: foo -->`.
-- `full` — autonomous to the end of `todo.md`. Use only when you fully trust the plan and have plenty of time / quota.
+- `step` — autonomous through ONE step. Rarely the right tool — for a single interactive step, `/bpe:execute-plan` is simpler. Use `step` only when you want the autonomous-mode contracts (SHA verification, session-summary-per-commit, push) on a single item without driving it yourself.
 
 State the routed mode in user-facing text before pre-flight.
 
@@ -29,7 +29,8 @@ git status --short
 test -f plan.md && echo "plan: yes" || echo "plan: NO"
 test -f todo.md && echo "todo: yes" || echo "todo: NO"
 grep -c '^- \[ \]' todo.md 2>/dev/null || echo 0
-grep -q '^commit-msg\.md$' .gitignore && echo "gitignore: ok" || echo "gitignore: MISSING commit-msg.md"
+grep -q '^commit-msg\.md$' .gitignore && echo "gitignore commit-msg.md: ok" || echo "gitignore commit-msg.md: MISSING"
+grep -q '^goal\.md$' .gitignore && echo "gitignore goal.md: ok" || echo "gitignore goal.md: MISSING"
 ```
 
 Then detect the test runner:
@@ -46,6 +47,7 @@ Then detect the test runner:
 - `plan.md` or `todo.md` is missing.
 - Zero unchecked items in `todo.md`.
 - `commit-msg.md` is not gitignored. Tell the user to add it and re-run.
+- `goal.md` is not gitignored. Tell the user to add it and re-run — this command writes the `/goal` block there as a working artifact.
 - Test runner can't be detected AND the user didn't supply one.
 
 Do NOT auto-create branches, auto-edit `.gitignore`, or auto-anything in pre-flight. These are deliberate decisions for the user.
@@ -69,20 +71,16 @@ Every item under the "<name>" section of todo.md is checked off; <test-cmd> exit
 Every item in todo.md is checked off; <test-cmd> exits 0 with no failing tests; git status --short is empty; all commits are pushed to origin/<branch>; .ai-sessions/lessons.md contains any new lessons captured during the run.
 ```
 
-## Step 3: Emit the Combined `/goal` Block
+## Step 3: Write the `/goal` Argument to `goal.md`
 
-`/goal` enforces a hard **4000-character cap** on its argument. STRICTLY enforce it: after substituting every placeholder, count the characters of the assembled block — the `/goal` line through the final `Mode:` line, i.e. everything inside the fenced block that gets pasted (the tilde rulers below are display-only and do NOT count). If the count exceeds 4000, trim the orchestrator prose — NEVER the safety contracts, the per-turn steps, or the verification rules — and recount. NEVER emit a block over 4000 characters. The user pastes ONE block. The condition leads (the evaluator focuses on its AND clauses); the orchestrator playbook follows in the same message.
+`/goal` enforces a hard **4000-character cap** on its argument. STRICTLY enforce it: after substituting every placeholder, count the characters of the assembled file content from the condition line through the final `Mode:` line. If the count exceeds 4000, trim the orchestrator prose — NEVER the safety contracts, the per-turn steps, or the verification rules — and recount. NEVER write content over 4000 characters to `goal.md`. The condition leads (the evaluator focuses on its AND clauses); the orchestrator playbook follows in the same message.
 
-Print the `/goal` block inside one fenced code block so it can be copied in one motion, framed by a tilde ruler above and below. Substitute `<condition>`, `<mode>`, `<test-cmd>`, and `<branch>` from steps 1–2.
+The user will run `/goal @goal.md`. Claude Code's `@` expansion inlines the file contents as the `/goal` argument, so `goal.md` must contain ONLY the argument body — **the file MUST NOT start with `/goal `** or the expansion would produce `/goal /goal …`.
 
-First print this ruler line **exactly as written**, wrapped in single backticks — it is inline code, so the markdown renderer prints the 80 tildes literally instead of treating the line as a tilde code-fence (a bare `~~~~…` line at column 0 gets swallowed as fence syntax):
+Use the Write tool to overwrite `goal.md` at the repo root with exactly the content below. Substitute `<condition>`, `<mode>`, `<test-cmd>`, and `<branch>` from steps 1–2. **Plain text only — no fenced code block, no surrounding ruler lines, no leading `/goal `.** The file contents ARE the `/goal` argument:
 
-`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-
-Then the `/goal` block:
-
-````
-/goal <condition from step 2>
+```
+<condition from step 2>
 
 You're the orchestrator for an autonomous BPE run. Loop until the goal condition above is met.
 
@@ -107,20 +105,18 @@ Per turn (one dispatch only):
 Hard rules: SEQUENTIAL only, never parallel. Never `/clear` or `/compact` (kills the active /goal). Never commit on the subagent's behalf, even on `Failure:`. Stop after 50 successful dispatches with "dispatch cap reached".
 
 Mode: <mode>. Test: <test-cmd>. Branch: <branch>.
-````
+```
 
-Then print the same ruler line again (inline code, exactly as written):
-
-`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-
-The tilde rulers are display-only frames so the `/goal` block is easy to spot in the transcript — they are NOT part of the `/goal` command. Keep them OUTSIDE the fenced block; the user copies only what's inside the fence.
-
-After the block, print this single-line reminder:
+After writing the file, print this in user-facing text — concise, no fenced /goal block, no tilde rulers, no inlined contents:
 
 ```
-Put your session into auto mode before pasting, so subagent tool calls don't prompt you mid-loop.
+Wrote /goal argument to goal.md (Mode: <mode>, Test: <test-cmd>, Branch: <branch>, length: <N>/4000 chars).
+Run with: /goal @goal.md
+Put your session into auto mode first, so subagent tool calls don't prompt you mid-loop.
 ```
+
+Do NOT paste the contents of `goal.md` inline. The whole point of writing to a file is to avoid dumping a multi-thousand-character block into the transcript every invocation — and the user no longer needs to copy anything, since `@goal.md` will inline the file at invocation time.
 
 ## Step 4: Do NOT Run It Yourself
 
-This command builds and emits the autonomous prompt — it does not execute it. The user must paste the emitted `/goal …` block themselves. If the user asks you to "just run it," remind them they need to paste it so the `/goal` evaluator owns the session loop.
+This command writes the `/goal` argument to disk — it does not execute it. The user must run `/goal @goal.md` themselves; slash commands can't invoke other slash commands programmatically. If the user asks you to "just run it," remind them they need to type `/goal @goal.md` so the `/goal` evaluator owns the session loop.
