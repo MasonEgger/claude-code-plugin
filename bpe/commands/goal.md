@@ -71,14 +71,16 @@ Every item under the "<name>" section of todo.md is checked off; <test-cmd> exit
 Every item in todo.md is checked off; <test-cmd> exits 0 with no failing tests; git status --short is empty; all commits are pushed to origin/<branch>; .ai-sessions/lessons.md contains any new lessons captured during the run.
 ```
 
-## Step 3: Write the `/goal` Block to `goal.md`
+## Step 3: Write the `/goal` Argument to `goal.md`
 
-`/goal` enforces a hard **4000-character cap** on its argument. STRICTLY enforce it: after substituting every placeholder, count the characters of the assembled block from the `/goal` line through the final `Mode:` line. If the count exceeds 4000, trim the orchestrator prose — NEVER the safety contracts, the per-turn steps, or the verification rules — and recount. NEVER write a block over 4000 characters to `goal.md`. The condition leads (the evaluator focuses on its AND clauses); the orchestrator playbook follows in the same message.
+`/goal` enforces a hard **4000-character cap** on its argument. STRICTLY enforce it: after substituting every placeholder, count the characters of the assembled file content from the condition line through the final `Mode:` line. If the count exceeds 4000, trim the orchestrator prose — NEVER the safety contracts, the per-turn steps, or the verification rules — and recount. NEVER write content over 4000 characters to `goal.md`. The condition leads (the evaluator focuses on its AND clauses); the orchestrator playbook follows in the same message.
 
-Use the Write tool to overwrite `goal.md` at the repo root with exactly the content below. Substitute `<condition>`, `<mode>`, `<test-cmd>`, and `<branch>` from steps 1–2. **Plain text only — no fenced code block, no surrounding ruler lines.** The file contents ARE the `/goal` block the user will paste:
+The user will run `/goal @goal.md`. Claude Code's `@` expansion inlines the file contents as the `/goal` argument, so `goal.md` must contain ONLY the argument body — **the file MUST NOT start with `/goal `** or the expansion would produce `/goal /goal …`.
+
+Use the Write tool to overwrite `goal.md` at the repo root with exactly the content below. Substitute `<condition>`, `<mode>`, `<test-cmd>`, and `<branch>` from steps 1–2. **Plain text only — no fenced code block, no surrounding ruler lines, no leading `/goal `.** The file contents ARE the `/goal` argument:
 
 ```
-/goal <condition from step 2>
+<condition from step 2>
 
 You're the orchestrator for an autonomous BPE run. Loop until the goal condition above is met.
 
@@ -108,13 +110,13 @@ Mode: <mode>. Test: <test-cmd>. Branch: <branch>.
 After writing the file, print this in user-facing text — concise, no fenced /goal block, no tilde rulers, no inlined contents:
 
 ```
-Wrote /goal block to goal.md (Mode: <mode>, Test: <test-cmd>, Branch: <branch>, length: <N>/4000 chars).
-Paste it when ready — e.g. `cat goal.md` and copy.
-Put your session into auto mode before pasting, so subagent tool calls don't prompt you mid-loop.
+Wrote /goal argument to goal.md (Mode: <mode>, Test: <test-cmd>, Branch: <branch>, length: <N>/4000 chars).
+Run with: /goal @goal.md
+Put your session into auto mode first, so subagent tool calls don't prompt you mid-loop.
 ```
 
-Do NOT also paste the contents inline. The whole point of writing to a file is to avoid dumping a multi-thousand-character block into the transcript every invocation.
+Do NOT paste the contents of `goal.md` inline. The whole point of writing to a file is to avoid dumping a multi-thousand-character block into the transcript every invocation — and the user no longer needs to copy anything, since `@goal.md` will inline the file at invocation time.
 
 ## Step 4: Do NOT Run It Yourself
 
-This command writes the autonomous prompt to disk — it does not execute it. The user must paste the contents of `goal.md` themselves into a `/goal …` invocation. If the user asks you to "just run it," remind them they need to paste it so the `/goal` evaluator owns the session loop.
+This command writes the `/goal` argument to disk — it does not execute it. The user must run `/goal @goal.md` themselves; slash commands can't invoke other slash commands programmatically. If the user asks you to "just run it," remind them they need to type `/goal @goal.md` so the `/goal` evaluator owns the session loop.

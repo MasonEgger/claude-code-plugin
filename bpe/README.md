@@ -21,7 +21,7 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:apply-review` | Load saved review feedback and apply changes to the reviewed artifact |
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 | `/bpe:wtf-wid` | WTF was I doing? Tight, fits-on-screen recap of the current session for fast re-entry |
-| `/bpe:goal` | Wrap the BPE loop in a `/goal`-driven autonomous run. Pre-flights safety, writes the orchestrator prompt to `goal.md` |
+| `/bpe:goal` | Wrap the BPE loop in a `/goal`-driven autonomous run. Pre-flights safety, writes the `/goal` argument to `goal.md` — run with `/goal @goal.md` |
 
 ## The BPE Loop
 
@@ -48,8 +48,8 @@ Requires Claude Code v2.1.139+.
 ```mermaid
 flowchart TD
     A["/bpe:goal [full|section|step]"] --> B["Pre-flight checks<br/>(refuses on main, missing files)"]
-    B --> C["Writes /goal block to goal.md<br/>(condition + trimmed orchestrator playbook)"]
-    C --> D["User pastes from goal.md"]
+    B --> C["Writes /goal argument to goal.md<br/>(condition + trimmed orchestrator playbook)"]
+    C --> D["User runs: /goal @goal.md"]
     D --> E["Parent loop: dispatch one step at a time"]
     E --> F["Agent(bpe:step-executor)<br/>fresh context, runs TDD, commits, pushes"]
     F -->|"returns ≤200-word report"| E
@@ -71,7 +71,7 @@ Hard guarantees:
 - Each subagent dispatch is a fresh context — no compaction, no /clear required.
 - `/goal clear` is the escape hatch. Subagent reports remain in the transcript for review.
 
-`/bpe:goal` writes the assembled paste-block to `goal.md` at the repo root: the `/goal` condition followed by a trimmed orchestrator playbook, together under `/goal`'s 4000-character cap. The condition leads (the evaluator focuses on its AND clauses); the playbook follows in the same message and tells the parent session how to drive the loop. `goal.md` is intended to be gitignored — `/bpe:goal` refuses to run if it isn't.
+`/bpe:goal` writes the assembled `/goal` argument to `goal.md` at the repo root: the condition followed by a trimmed orchestrator playbook, together under `/goal`'s 4000-character cap. You then run `/goal @goal.md` — Claude Code's `@` expansion inlines the file contents as the `/goal` argument, so no copy-paste is needed. The condition leads (the evaluator focuses on its AND clauses); the playbook follows in the same message and tells the parent session how to drive the loop. `goal.md` is intended to be gitignored — `/bpe:goal` refuses to run if it isn't. The file MUST NOT start with `/goal ` since `@goal.md` already supplies the argument; the command writes the body only.
 
 Three hard contracts the orchestrator enforces:
 
