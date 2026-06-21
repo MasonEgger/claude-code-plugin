@@ -59,7 +59,7 @@ Goal: parse validator findings, apply fixes for `block` and `warn` severities, l
 
 Additional invariants for this mode:
 - Dirty tree EXPECTED at start. Do NOT run a clean-tree check. The orchestrator dispatches this mode precisely because the prior `implement` (or prior `fix`) left work uncommitted.
-- Parse findings from the dispatch prompt. The orchestrator pastes a JSON block tagged `findings`. Extract it and pipe it through `${CLAUDE_PLUGIN_ROOT}/bpe/scripts/validate-findings.py`. A malformed block is a hard failure: return `Failure: orchestrator passed malformed findings` and stop.
+- Parse findings from the dispatch prompt. The orchestrator pastes a JSON block tagged `findings`. Extract it and pipe it through `${CLAUDE_PLUGIN_ROOT}/scripts/validate-findings.py`. A malformed block is a hard failure: return `Failure: orchestrator passed malformed findings` and stop.
 
 Procedure:
 

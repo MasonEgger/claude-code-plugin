@@ -45,7 +45,7 @@ The dispatch prompt contains these fields. Parse them at the top of your turn:
    - Auto-discovery fallback (both lists empty): use `ToolSearch` to enumerate available MCPs, read the available skills from the session, then do a single judgment pass picking at most three that apply to the diff. Record the chosen set in `notes`.
 5. Review the diff against the loaded guidance. For each issue, draft a finding with severity, file, message, and (when known) line, rule, suggested_fix, reference. Stay grounded: every finding must trace back to a specific rule from a consulted skill or MCP. Do not invent rules.
 6. Assemble the findings block per the schema in the protocol doc. Set `verdict` to the worst severity present (`block` if any block, `warn` if any warn and no block, `clean` otherwise).
-7. Validate the block. Pipe it through `${CLAUDE_PLUGIN_ROOT}/bpe/scripts/validate-findings.py`. If the script exits 0, use the canonical form it printed. If it exits 1, read the stderr message, fix the block, and retry once. A second failure is a Failure report (see below).
+7. Validate the block. Pipe it through `${CLAUDE_PLUGIN_ROOT}/scripts/validate-findings.py`. If the script exits 0, use the canonical form it printed. If it exits 1, read the stderr message, fix the block, and retry once. A second failure is a Failure report (see below).
 8. Return. Output the validated canonical findings block as the last content in your turn. No prose after it.
 
 ## Output format
