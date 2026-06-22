@@ -105,6 +105,37 @@ When specifying tests in RED phases, focus ONLY on application logic:
 
 Make sure and separate each prompt section. Use markdown. Each prompt should be tagged as text using code tags. The goal is to output prompts that execute-plan can follow step-by-step, but context and architectural decisions are important as well.
 
+## Per-section validator declarations
+
+Read spec.md's `## Available tooling` section before drafting plan.md. For each plan section (top-level `##` heading in plan.md), decide which subset of the project's available MCPs and skills the `bpe:validator` should consult when reviewing diffs from that section's steps. Record the decision immediately under the section heading using this exact format:
+
+```markdown
+## Section 2: Workflow implementation
+
+**Validator consults:**
+- MCPs: mcp__temporal-docs__search_temporal_knowledge_sources
+- Skills: temporal:temporal-developer
+```
+
+Sections that do not need domain validation (e.g. wiring config files, writing fixtures, scaffolding the project layout) use:
+
+```markdown
+**Validator consults:** none
+```
+
+A literal `none` value disables the validator dispatch for every step in that section.
+
+Guidance for picking validators per section:
+
+- A section that touches `workflows/`, `activities/`, or other Temporal-specific paths should consult the Temporal MCP and skill.
+- A section that writes Python application code should consult `python:python` for style and toolchain rules.
+- A section that writes pure scaffolding, fixtures, or framework-trivial code should declare `none`.
+- Validator passes cost real tokens. Lean toward `none` when the consulted tools would have nothing useful to say.
+
+If spec.md's `## Available tooling` section is empty (no MCPs, no skills), every plan section declares `Validator consults: none`. The plan still gets written; the validator-aware loop simply runs zero validator dispatches.
+
+If spec.md has no `## Available tooling` section at all (legacy spec), proceed as if every section declares `none`. Do not retroactively prompt the user; the user can re-run `/bpe:brainstorm` if they want validators on this project.
+
 ## Output Format
 
 Store the plan in @plan.md with:
@@ -112,6 +143,7 @@ Store the plan in @plan.md with:
 - Each step as a detailed prompt with numbered sub-instructions
 - Implementation Guidelines section
 - Success Metrics section
+- The `**Validator consults:**` block immediately under each section heading
 
 Also create a @todo.md that:
 - Mirrors the plan.md structure with checkboxes
