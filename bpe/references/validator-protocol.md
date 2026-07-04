@@ -2,6 +2,8 @@
 
 The contract between `bpe:goal` (orchestrator), `bpe:validator` (QA agent), and `bpe:step-executor` modes (`implement`, `fix`, `finalize`). Anyone changing one of those three must read this file first.
 
+Executor-specific detail (mode-by-mode invariants, report field semantics, orchestrator verification steps) lives in the parallel file `references/step-executor-protocol.md`. This file owns the shared state machine and the validator's findings schema; that one owns the executor's dispatch shape.
+
 ## Roles
 
 1. `bpe:goal` (orchestrator). Owns the per-step state machine. Reads per-section validator declarations from `plan.md`. Dispatches the executor and the validator(s) in the right order. Enforces the iteration cap. Never commits, never edits files.
