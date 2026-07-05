@@ -85,6 +85,8 @@ Shape:
 
 Feature template (existing TDD RED/GREEN/REFACTOR) unchanged and remains the default. Task steps carry `(task)` marker in the title; feature steps stay unmarked. Executor is template-agnostic (follows numbered sub-steps as written).
 
+**Meta-prompting is the mechanism.** The numbered sub-steps in each plan.md step are prompts the executor will follow literally, not descriptive summaries. `/bpe:plan`'s job is to write good executor prompts, not to summarize what the step is about. This is what makes BPE effective: a well-formed plan.md step reads like a direct instruction to the code-generation LLM (with exact file paths, exact test scenarios, exact commands), and the executor's role reduces to following the instruction verbatim. This applies to both Feature and Task templates equally. Task template's Scope / Tooling / Do / Verify / Document sub-steps are still prompts, just shaped for wiring/config/docs/refactor/scaffolding work instead of the TDD cycle.
+
 Plan-writer heuristic: use Feature when a bug could hide (new logic, custom validation, novel algorithm). Use Task for wiring, renames, config, dependency management, docs, scaffolding, refactors with no behavior change, or any non-code work. Fallback rule: if uncertain, use Feature.
 
 ### Goal 2: Per-section Tools block
@@ -265,7 +267,38 @@ Subagent tier assignments (frontmatter in `bpe/agents/*.md`):
 | bpe:validator | opus | Adversarial review needs Opus judgment |
 | bpe:cheap-research | haiku | Cheap external lookups |
 
-The runtime resolves `opus`, `sonnet`, `haiku` aliases to the latest available model in each family, which handles the personal-vs-work Fable-availability split automatically.
+The runtime resolves `opus`, `sonnet`, `haiku` aliases to the latest available model in each family. That handles the automatic case where the current model in each family is fine, but it does NOT give the user an explicit "use Fable specifically for brainstorm on my personal machine" lever. `opus` resolving to whichever Opus is latest is not the same as `opus` resolving to Fable when Fable is what the user wants.
+
+**Per-user profile mechanism (`.claude/bpe.local.md`).** The plugin ships with a settings-file lookup layer that overrides skill and subagent `model:` fields at runtime. The file has YAML frontmatter declaring per-user profiles with per-skill and per-subagent overrides:
+
+```markdown
+---
+active_profile: personal
+profiles:
+  personal:
+    skills:
+      brainstorm: claude-opus-4-7        # explicit Fable model ID
+      apply-review: claude-opus-4-7
+    agents:
+      validator: claude-opus-4-7
+  work:
+    skills:
+      brainstorm: opus                    # alias resolves to work-available Opus
+      apply-review: opus
+    agents:
+      validator: opus
+---
+```
+
+The `active_profile` field selects which profile is live. `BPE_PROFILE=work` env var overrides the file for shell-scoped switching. Overrides accept any value the SKILL.md `model:` field accepts (aliases or explicit model IDs). Unset skills or subagents fall back to their frontmatter `model:` field.
+
+Advantages:
+- Fable comes and goes (subscription, work rules, model retirement). User updates one file, every skill and subagent adapts.
+- Model renames don't break the plugin. Tokens/aliases stay stable; user updates the profile map when a rename happens.
+- Per-project override: repo-local `.claude/bpe.local.md` shadows user-global (same pattern as CLAUDE.md).
+- Plugin ships sensible defaults when no settings file exists. Fresh install just works.
+
+Cost: one settings-lookup step per skill invocation and per subagent dispatch. Small. Worth it.
 
 ## Non-goals
 
@@ -274,7 +307,6 @@ Explicit no-goes for this redesign. Rejecting these once, in writing, prevents s
 - **Per-domain plan templates** (ansible / slidev / skills / curriculum / tutorials as separate templates). Rejected in favor of one generic Task template. Domain shape is captured in the Task step's Tooling + Verify sub-steps.
 - **Enforced session-model switching for multi-turn interactive commands beyond turn 1.** Accepted as a Claude Code platform constraint (skill `model:` field is per-turn). Advisory-only for follow-up turns.
 - **Web-search-for-tools without opt-out.** Discovery is default-on with `--no-discover` opt-out.
-- **`.claude/bpe.local.md` user profile file** for per-user tier overrides. Deferred; runtime alias resolution handles the current dual-context need.
 - **HTML mockup/prototype phase in brainstorm.** Belongs upstream of BPE.
 - **Post-implementation quiz** (from thariq.md). Breaks autonomous mode; `wtf-wid` + `/bpe:review` cover intent.
 - **Reordering plan.md to lead with tweakable decisions** (from thariq.md). `/bpe:review`'s decision-unit model already provides this at review time without imposing structure on plan.md itself.
@@ -284,7 +316,7 @@ Explicit no-goes for this redesign. Rejecting these once, in writing, prevents s
 
 ## Component boundaries
 
-Ten independently implementable components. Component A must land first (bootstrap for tier enforcement); components B through J proceed largely in parallel afterward.
+Eleven independently implementable components. Component A must land first (bootstrap for tier enforcement); components B through K proceed largely in parallel afterward, with K landing last since it references J's tier assignments.
 
 ### Component A: Skill migration
 
@@ -403,16 +435,33 @@ Ten independently implementable components. Component A must land first (bootstr
 
 **Verification:** Dispatching each subagent respects the tier. Invoking each skill switches the current turn's model to the declared tier.
 
+### Component K: Per-user profile system
+
+**Scope:** Ship a per-user profile file (`.claude/bpe.local.md`) that maps skills and subagents to specific model IDs, overriding the ship-with-plugin defaults from Component J. Support `active_profile:` toggle for personal-vs-work modes and `BPE_PROFILE` env var override. Per-project shadow overrides in project-local `.claude/bpe.local.md`.
+
+**Enforcement mechanism (to nail down during plan phase):** Options include (a) UserPromptSubmit hook that warns if session model does not match profile expectation, (b) documented manual workflow where user runs `/model <id>` before invoking a skill per the profile, (c) SessionStart hook that sets the session model per profile at session start. The specific mechanism depends on Claude Code platform capabilities at implementation time.
+
+**Files touched:**
+- `bpe/references/model-profiles.md` (new — canonical schema documentation and lookup semantics)
+- `bpe/hooks/profile-check.md` (new — UserPromptSubmit hook to warn on mismatch, per-invocation basis)
+- `.claude/bpe.local.md.example` (new — commented example file for users to copy to their `.claude/` directory)
+- `bpe/README.md` (updated — profile documentation section)
+
+**Verification:**
+- Example profile file loads without YAML parse errors.
+- Personal profile with `brainstorm: claude-opus-4-7` and current session on `claude-sonnet-4-6`: hook fires warning on `/bpe:brainstorm`.
+- `BPE_PROFILE=work` env var: work profile takes precedence over `active_profile: personal` in the file.
+- Absent profile file: no warnings; skills use their frontmatter defaults.
+
+**Dependencies:** Lands after Components A (skills exist to reference) and J (subagents have `model:` fields to reference). Independent of B-I.
+
 ## Plan generation approach
 
-This redesign predates Goal 1 landing. `/bpe:plan` in its current state produces Feature-template (TDD) steps only, which would forcibly ceremony every markdown edit in this redesign. Two workable paths:
+The redesign uses `/bpe:plan` in its current 0.5.x form with a natural-language directive to skip TDD for this specific project. Sample invocation: pass an instruction like *"spec.md is markdown-heavy meta-project work; produce Task-shape numbered instructions per step, no RED/GREEN/REFACTOR cycles, no test scenarios, verify with concrete checks (ls, grep, plugin loads, slash command resolves)."* The LLM running `/bpe:plan` honors the instruction by producing numbered task prompts instead of the default TDD-cycle prompts.
 
-1. **Hand-write `plan.md`** for the whole redesign using the Task shape defined in Goal 1 as the working template. Skip `/bpe:plan` entirely for this project. This dogfoods the Task template design before it exists in the plugin.
-2. **Hand-write `plan.md` for Components A and B only**, then after Component B lands (and `/bpe:plan` learns the Task template), regenerate the plan for the remaining components with `/bpe:plan --regen`.
+This is a one-off exception for this meta-project. Once Component B lands the real Task template in the plan skill, subsequent `/bpe:plan` runs on other projects use the template natively without an override directive.
 
-Recommendation: path 1. The whole redesign is a single coherent piece of work; regenerating mid-flight adds unnecessary churn. Hand-write plan.md and todo.md at the start; treat it as immutable once execution begins.
-
-Every step in the plan is Task shape. No RED phases. No test scenarios. No `just check`. Verification per step is whichever concrete check fits (`ls path/`, `head -20 path`, `grep pattern path`, `plugin loads`, `slash command resolves`, etc.).
+Every step in the resulting plan.md is Task shape. No RED phases. No test scenarios. No `just check`. Verification per step is whichever concrete check fits (`ls path/`, `head -20 path`, `grep pattern path`, plugin loads, slash command resolves, etc.).
 
 ## Ordering constraint
 
@@ -421,16 +470,17 @@ Component A (skill migration) is mechanical bootstrap and must land first. It co
 Suggested execution order:
 
 ```
-A → B → C → D → E → F → G → H → I → J
+A → B → C → D → E → F → G → H → I → J → K
 ```
 
-Components after A are largely independent; the sequential order above is a suggested cadence, not a hard requirement. J happens incrementally as each skill in A is migrated and each agent is edited.
+Components after A are largely independent; the sequential order above is a suggested cadence, not a hard requirement. J happens incrementally as each skill in A is migrated and each agent is edited. K lands last since it references the tier assignments from J.
 
 Explicit dependencies:
 - B and I both touch the validator-protocol schema. Merge sequence matters; B should land first.
 - C creates the `bpe:cheap-research` subagent. D uses it in the retrofit skill.
 - E adds Step 0 to brainstorm and retrofit. D creates retrofit. E can update brainstorm independently and update retrofit after D lands.
 - F, G, H, I are independent of each other and of D, E.
+- K depends on A (skills exist) and J (subagents and skills have `model:` fields to override). Otherwise independent.
 
 ## Success criteria
 
@@ -445,14 +495,13 @@ The 0.6.0 release converges when all of the following hold.
 7. `/bpe:goal` runs a non-code project autonomously using a `spec.md`-declared `**Verification command:**`.
 8. `bpe:validator` emits Vale-sourced findings on a prose project with `Linters: vale ...` in the Tools block.
 9. `.ai-sessions/<slug>/` archive directories exist for completed plans, with `plan.md`, `todo.md`, and `accomplishment.md`.
-10. Subagent frontmatter enforces model tiers: `step-executor: sonnet`, `validator: opus`, `cheap-research: haiku`. Skill frontmatter enforces per-turn tier per the Goal 11 table.
+10. Subagent frontmatter enforces model tiers: `step-executor: sonnet`, `validator: opus`, `cheap-research: haiku`. Skill frontmatter enforces per-turn tier per the Goal 11 table. `.claude/bpe.local.md` profile system supports per-skill and per-subagent overrides with `active_profile:` toggle and `BPE_PROFILE` env var. Personal profile can pin specific skills to a Fable model ID; work profile defaults to `opus` alias.
 11. `bpe/.claude-plugin/plugin.json` version bumped to 0.6.0.
 
 ## Out of scope (future work, tracked)
 
 Design was considered and deferred to a later release.
 
-- `.claude/bpe.local.md` user profile for per-user tier overrides. Runtime alias resolution covers the primary dual-context need; profile support is nice-to-have.
 - UserPromptSubmit hook that warns loudly when a skill is invoked below its recommended tier.
 - Feature-lite template as a third middle-ground.
 - Ranking algorithm improvements for `bpe:cheap-research` external tool discovery.
