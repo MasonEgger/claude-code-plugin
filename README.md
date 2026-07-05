@@ -80,13 +80,14 @@ To pull the latest changes from this repository:
 
 ## Repository Structure
 
-- `.claude-plugin/marketplace.json` — plugin registry for Claude Code
-- `bpe/.claude-plugin/plugin.json` — BPE plugin manifest
-- `bpe/commands/` — slash commands
-- `bpe/scripts/` — bundled helper scripts (e.g. `review-server.py` for `/bpe:review`)
-- `bpe/references/` — plugin-bundled reference docs that commands read directly (e.g. `session-management.md`)
-- `python/.claude-plugin/plugin.json` — Python plugin manifest
-- `python/skills/python/` — the `python` skill (SKILL.md plus reference docs for toolchain, CLI scripts, documentation, and TDD workflow)
+- `.claude-plugin/marketplace.json`: plugin registry for Claude Code
+- `bpe/.claude-plugin/plugin.json`: BPE plugin manifest
+- `bpe/skills/<name>/SKILL.md`: BPE skills (invoked as `/bpe:<name>`)
+- `bpe/agents/`: subagents dispatched by `/bpe:goal` (`step-executor`, `validator`)
+- `bpe/scripts/`: bundled helper scripts (e.g. `review-server.py` for `/bpe:review`)
+- `bpe/references/`: plugin-bundled reference docs that skills read directly (e.g. `session-management.md`)
+- `python/.claude-plugin/plugin.json`: Python plugin manifest
+- `python/skills/python/`: the `python` skill (SKILL.md plus reference docs for toolchain, CLI scripts, documentation, and TDD workflow)
 
 ## Prerequisites
 

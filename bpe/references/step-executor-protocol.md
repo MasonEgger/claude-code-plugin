@@ -128,7 +128,7 @@ After a `finalize` dispatch returns, the orchestrator verifies against the repor
 2. `git show --stat --name-only <sha> | grep '^\.ai-sessions/session-.*\.md$'` returns non-empty.
 3. `Tests:` field indicates exit 0.
 
-Any check fails => `BPE rule violation: <details>`, echo RESUME, STOP. The exact commands and stop behavior live in `commands/goal.md`'s orchestrator playbook.
+Any check fails => `BPE rule violation: <details>`, echo RESUME, STOP. The exact commands and stop behavior live in `skills/goal/SKILL.md`'s orchestrator playbook.
 
 ## Hard rules (shared with validator-protocol.md)
 

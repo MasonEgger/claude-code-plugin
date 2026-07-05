@@ -160,6 +160,6 @@ Re-run `/bpe:goal` before `/goal @goal.md` if any of these changed since the las
 
 - **Mode.** Switching from `full` to `step` (or vice versa) requires a new goal.md so the condition matches.
 - **Environment.** Test runner switched, branch was renamed, or plan.md's section names changed.
-- **Plugin file fix.** Editing a subagent file (fresh per dispatch) doesn't need regeneration. Editing the orchestrator playbook (`commands/goal.md` Step 3) does; re-run `/bpe:goal` to rewrite goal.md.
+- **Plugin file fix.** Editing a subagent file (fresh per dispatch) doesn't need regeneration. Editing the orchestrator playbook (`skills/goal/SKILL.md` Step 3) does; re-run `/bpe:goal` to rewrite goal.md.
 
 Do NOT `/goal clear` unless you want to abandon the current goal entirely. `clear` resets the evaluator's state; the next `/goal @goal.md` starts a fresh loop and the transcript loses the failure context.

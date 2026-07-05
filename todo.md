@@ -10,12 +10,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] All 12 skill dirs created with SKILL.md + `disable-model-invocation: true`
   - [x] Verify: 12 SKILL.md files exist; frontmatter YAML parses; `claude plugin validate` passes (live `/bpe:` autocomplete check deferred to a reloaded interactive session)
   - [x] Documented (README note about migration)
-- [ ] Step A2: Delete legacy `bpe/commands/` files after verification
-  - [ ] Scope defined (empty commands/ dir)
-  - [ ] Tooling loaded (plugin-dev:plugin-structure)
-  - [ ] Files removed; plugin.json checked
-  - [ ] Verify: commands/ empty; /bpe:brainstorm still works
-  - [ ] Documented (no new docs)
+- [x] Step A2: Delete legacy `bpe/commands/` files after verification
+  - [x] Scope defined (empty commands/ dir; plan said 13 files but 12 existed, per the A1 discrepancy note)
+  - [x] Tooling loaded (plugin-dev:plugin-structure)
+  - [x] Files removed; directory removed; plugin.json checked (no `commands:` field present); dangling `commands/` path references updated to `skills/<name>/SKILL.md` in step-executor.md, goal/SKILL.md, step-executor-protocol.md
+  - [x] Verify: commands/ removed; brainstorm SKILL.md frontmatter parses and `claude plugin validate ./bpe` exits 0 (interactive /bpe:brainstorm check deferred to a reloaded session, same as A1)
+  - [x] Documented (no new docs; README migration note from A1 stands)
 
 ## Component B: Plan template family and Tools block
 

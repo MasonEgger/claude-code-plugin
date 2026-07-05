@@ -28,9 +28,9 @@ Read the dispatch prompt for a `Mode:` line. Branch on its value:
 
 Echo the routed mode in user-facing text before pre-flight so the orchestrator transcript captures it.
 
-## How to follow a referenced command file
+## How to follow a referenced skill file
 
-The procedures below reference markdown files at `${CLAUDE_PLUGIN_ROOT}/commands/*.md` and `${CLAUDE_PLUGIN_ROOT}/references/*.md`. "Follow" means: Read the markdown file with the Read tool, then execute its numbered procedure inline as your own work. Do NOT attempt to invoke the corresponding slash command (e.g. `/bpe:execute-plan`, `/bpe:session-summary`, `/bpe:commit-message`). You are a subagent with no user-input channel; slash commands cannot be invoked from here. If a procedure step says "use the X tool" or "run command Y", do that directly. If it says "ask the user" (execute-plan steps 6 and 10 do this), see the "No user questions" invariant in the protocol.
+The procedures below reference markdown files at `${CLAUDE_PLUGIN_ROOT}/skills/*/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/references/*.md`. "Follow" means: Read the markdown file with the Read tool, then execute its numbered procedure inline as your own work. Do NOT attempt to invoke the corresponding slash command (e.g. `/bpe:execute-plan`, `/bpe:session-summary`, `/bpe:commit-message`). You are a subagent with no user-input channel; slash commands cannot be invoked from here. If a procedure step says "use the X tool" or "run command Y", do that directly. If it says "ask the user" (execute-plan steps 6 and 10 do this), see the "No user questions" invariant in the protocol.
 
 ## Mode: implement
 
@@ -40,7 +40,7 @@ Procedure:
 
 1. Clean-tree check. `git status --short`. Abort with `Failure:` if non-empty. Echo the offending output. A dirty tree at implement start means the prior step did not finalize, OR the orchestrator broke SEQUENTIAL DISPATCHES.
 2. Branch check. `git rev-parse --abbrev-ref HEAD`. Abort on `main`/`master`. Echo.
-3. TDD step. Read `${CLAUDE_PLUGIN_ROOT}/commands/execute-plan.md` and execute its numbered procedure inline. Failing test, minimal code to pass, refactor, mark the todo item.
+3. TDD step. Read `${CLAUDE_PLUGIN_ROOT}/skills/execute-plan/SKILL.md` and execute its numbered procedure inline. Failing test, minimal code to pass, refactor, mark the todo item.
 4. Branch re-check (defense in depth). Abort if changed to `main`/`master`.
 5. Test run. Run the project's test command. Capture the result. Abort with `Failure:` if not exit 0; do not hand a red diff to the validator.
 6. Tree snapshot. Run `git diff --shortstat` and capture for the report.
@@ -70,9 +70,9 @@ Procedure:
 
 1. Branch + tree-state check. `git rev-parse --abbrev-ref HEAD` (abort on `main`/`master`) AND `git status --short` (expect non-empty; abort with `Failure:` if EMPTY since there is nothing to commit). Echo both.
 2. Final test run. Run the project's test command one final time and confirm exit 0. This is your last chance to catch issues. Abort with `Failure:` if red.
-3. Per-step session summary (MANDATORY). Read `${CLAUDE_PLUGIN_ROOT}/commands/session-summary.md` and execute its procedure inline. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`. This file MUST be created on every step and MUST be staged in step 6.
+3. Per-step session summary (MANDATORY). Read `${CLAUDE_PLUGIN_ROOT}/skills/session-summary/SKILL.md` and execute its procedure inline. Use a slug like `goal-step-N-<short-desc>` so files group naturally in `.ai-sessions/`. This file MUST be created on every step and MUST be staged in step 6.
 4. Lessons (optional). If this step surfaced a genuinely novel, durable lesson, read `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` and apply its "Capturing Lessons" rules inline to append to `.ai-sessions/lessons.md`. Be conservative. Most steps add zero lessons.
-5. Commit message. Read `${CLAUDE_PLUGIN_ROOT}/commands/commit-message.md` and execute its procedure inline. The output is `commit-msg.md` at the repo root. ALWAYS overwrite any existing `commit-msg.md`; it is gitignored and persists between commits, so a stale message from a prior commit will silently ride along into yours if you skip this step. If the dispatch prompt contained an `Info findings:` block, append a corresponding short section to the commit message body listing each info finding's rule and message on its own line.
+5. Commit message. Read `${CLAUDE_PLUGIN_ROOT}/skills/commit-message/SKILL.md` and execute its procedure inline. The output is `commit-msg.md` at the repo root. ALWAYS overwrite any existing `commit-msg.md`; it is gitignored and persists between commits, so a stale message from a prior commit will silently ride along into yours if you skip this step. If the dispatch prompt contained an `Info findings:` block, append a corresponding short section to the commit message body listing each info finding's rule and message on its own line.
 6. Commit. Stage exactly these files; enumerate them, do not use `git add -A`:
    - (a) Every code/test file modified or created during the step.
    - (b) `todo.md` (which `Mode: implement` updated to check off the item).
