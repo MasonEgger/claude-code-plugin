@@ -1,6 +1,6 @@
 ---
 description: Load saved review feedback from /bpe:review and apply changes to the reviewed artifact
-argument-hint: [feedback-json-path] (optional; defaults to the most recent /tmp/bpe-review-*-feedback.json)
+argument-hint: "[feedback-json-path] (optional; defaults to the most recent /tmp/bpe-review-*-feedback.json)"
 ---
 
 # Apply Review Command
