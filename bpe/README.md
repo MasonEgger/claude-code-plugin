@@ -23,6 +23,10 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:wtf-wid` | WTF was I doing? Tight, fits-on-screen recap of the current session for fast re-entry |
 | `/bpe:goal` | Wrap the BPE loop in a `/goal`-driven autonomous run. Pre-flights safety, writes the `/goal` argument to `goal.md` — run with `/goal @goal.md` |
 
+As of 0.6.0, BPE commands are implemented as skills.
+Invocation is unchanged: each `/bpe:<name>` above works exactly as before.
+The underlying file layout moved from `commands/<name>.md` to `skills/<name>/SKILL.md`.
+
 ## The BPE Loop
 
 1. **Brainstorm** - Develop a thorough specification through iterative dialogue

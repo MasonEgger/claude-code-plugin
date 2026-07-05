@@ -4,12 +4,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component A: Skill migration
 
-- [ ] Step A1: Migrate all `bpe/commands/*.md` to `bpe/skills/<name>/SKILL.md`
-  - [ ] Scope defined (13 skill dirs under bpe/skills/)
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] All 13 skill dirs created with SKILL.md + `disable-model-invocation: true`
-  - [ ] Verify: 13 SKILL.md files exist; `/bpe:` autocomplete shows all
-  - [ ] Documented (README note about migration)
+- [x] Step A1: Migrate all `bpe/commands/*.md` to `bpe/skills/<name>/SKILL.md`
+  - [x] Scope defined (12 skill dirs under bpe/skills/; plan said 13 but enumerates 12 and 12 command files exist)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] All 12 skill dirs created with SKILL.md + `disable-model-invocation: true`
+  - [x] Verify: 12 SKILL.md files exist; frontmatter YAML parses; `claude plugin validate` passes (live `/bpe:` autocomplete check deferred to a reloaded interactive session)
+  - [x] Documented (README note about migration)
 - [ ] Step A2: Delete legacy `bpe/commands/` files after verification
   - [ ] Scope defined (empty commands/ dir)
   - [ ] Tooling loaded (plugin-dev:plugin-structure)
