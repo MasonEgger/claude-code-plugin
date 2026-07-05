@@ -19,12 +19,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component B: Plan template family and Tools block
 
-- [ ] Step B1: Add Task template and heuristic guidance to `/bpe:plan` skill
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Feature/Task sections added; meta-prompting note; heuristic
-  - [ ] Verify: greps for Task/Feature/Meta-prompting succeed; skill body loads
-  - [ ] Documented (in skill body)
+- [x] Step B1: Add Task template and heuristic guidance to `/bpe:plan` skill
+  - [x] Scope defined (bpe/skills/plan/SKILL.md only)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Feature/Task sections added; meta-prompting note; heuristic; two consistency edits (intro line + Prompt Generation Requirement 4) so the body no longer claims every prompt is RED-GREEN-REFACTOR
+  - [x] Verify: greps for Task/Feature/Meta-prompting succeed (3/1/2); frontmatter YAML parses; `claude plugin validate ./bpe` exits 0 (interactive /bpe:plan invocation deferred to a reloaded session, same as A1/A2)
+  - [x] Documented (in skill body)
 - [ ] Step B2: Add per-section Tools block schema to `/bpe:plan` skill
   - [ ] Scope defined
   - [ ] Tooling loaded

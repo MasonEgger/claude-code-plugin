@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Transform spec.md into a TDD implementation roadmap (plan.md + todo.md)
+description: Transform spec.md into an implementation roadmap (plan.md + todo.md) of TDD Feature steps and non-TDD Task steps
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Draft a detailed, step-by-step blueprint for building this project. Then, once you have a solid plan, break it down into small, iterative chunks that build on each other. Look at these chunks and then go another round to break it into small steps. Review the results and make sure that the steps are small enough to be implemented safely with strong testing, but big enough to move the project forward. Iterate until you feel that the steps are right sized for this project.
 
-From here you should have the foundation to provide a series of prompts for a code-generation LLM that will implement each step in a test-driven manner. Prioritize best practices, incremental progress, and early testing, ensuring no big jumps in complexity at any stage. Make sure that each prompt builds on the previous prompts, and ends with wiring things together. There should be no hanging or orphaned code that isn't integrated into a previous step.
+From here you should have the foundation to provide a series of prompts for a code-generation LLM that will implement each step (test-driven for Feature steps; see the two templates below). Prioritize best practices, incremental progress, and early testing, ensuring no big jumps in complexity at any stage. Make sure that each prompt builds on the previous prompts and (for Feature steps) ends with wiring things together. There should be no hanging or orphaned code that isn't integrated into a previous step.
 
 ## Testing Guidelines for Generated Prompts
 
@@ -38,7 +38,12 @@ When specifying tests in RED phases, focus ONLY on application logic:
 
 **Each prompt must be structured as numbered sub-steps that execute-plan can follow sequentially:**
 
-### Format for Each Step Prompt:
+### Feature template (TDD RED/GREEN/REFACTOR)
+
+The default template.
+Use it for steps where a bug could hide (see the heuristic below).
+Feature step titles carry no marker.
+
 ```
 ### Step X: [Descriptive Title]
 
@@ -91,6 +96,53 @@ When specifying tests in RED phases, focus ONLY on application logic:
 8. Verify meaningful test coverage of YOUR application logic and run `just check`
 ```
 
+### Task template (non-TDD generic)
+
+Use this template for steps where the TDD cycle adds nothing.
+Task step titles carry a trailing `(task)` marker; feature steps stay unmarked.
+
+````
+### Step X: [Title] (task)
+
+**NOTE**: [Optional context]
+
+```text
+1. Scope:
+   - Artifact(s): [exact file paths or resource names]
+   - Desired end state: [what "done" looks like]
+
+2. Tooling:
+   - Skills: [comma-separated skill names to invoke]
+   - MCPs: [comma-separated MCP names to consult]
+   - External: [linters, previewers, CLIs the step needs]
+
+3. Do the work:
+   - [Specific action 1 with exact path]
+   - [Specific action 2 with exact path]
+
+4. Verify:
+   - [Single command or invocation returning exit 0, or human-check description]
+
+5. Document:
+   - [Exact file + specific note], or "none"
+```
+````
+
+### Choosing between templates (plan-writer heuristic)
+
+Use Feature when a bug could hide: new logic, custom validation, a novel algorithm.
+Use Task for wiring, renames, config, dependency management, docs, scaffolding, refactors with no behavior change, or any non-code work.
+Fallback rule: if uncertain, use Feature.
+
+### Meta-prompting
+
+**Meta-prompting is the mechanism.** The numbered sub-steps in each plan.md step are prompts the executor will follow literally, not descriptive summaries.
+This skill's job is to write good executor prompts, not to summarize what each step is about.
+A well-formed plan.md step reads like a direct instruction to the code-generation LLM: exact file paths, exact test scenarios, exact commands.
+The executor's role reduces to following the instruction verbatim.
+This applies to both Feature and Task templates equally.
+The Task template's Scope / Tooling / Do / Verify / Document sub-steps are still prompts, just shaped for wiring/config/docs/refactor/scaffolding work instead of the TDD cycle.
+
 ## Prompt Generation Requirements
 
 1. **Executable Instructions**: Each numbered sub-step must be a specific instruction that execute-plan can follow exactly, not general guidance
@@ -99,11 +151,11 @@ When specifying tests in RED phases, focus ONLY on application logic:
 
 3. **Test Scenario Detail**: Each RED phase must list specific test scenarios to implement, not generic "write tests"
 
-4. **TDD Structure**: Every prompt must follow RED-GREEN-REFACTOR with clear phases
+4. **Template Structure**: Every Feature prompt must follow RED-GREEN-REFACTOR with clear phases; every Task prompt must follow Scope / Tooling / Do / Verify / Document
 
 5. **Sequential Dependencies**: Each prompt builds on previous prompts with no orphaned code
 
-6. **Integration Requirements**: Each prompt ends with wiring the new code into existing systems
+6. **Integration Requirements**: Every Feature prompt ends with wiring the new code into existing systems; Task prompts end with their Verify and Document sub-steps
 
 Make sure and separate each prompt section. Use markdown. Each prompt should be tagged as text using code tags. The goal is to output prompts that execute-plan can follow step-by-step, but context and architectural decisions are important as well.
 
