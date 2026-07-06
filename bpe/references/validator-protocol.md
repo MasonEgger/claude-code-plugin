@@ -6,7 +6,7 @@ Executor-specific detail (mode-by-mode invariants, report field semantics, orche
 
 ## Roles
 
-1. `bpe:goal` (orchestrator). Owns the per-step state machine. Reads per-section validator declarations from `plan.md`. Dispatches the executor and the validator(s) in the right order. Enforces the iteration cap. Never commits, never edits files.
+1. `bpe:goal` (orchestrator). Owns the per-step state machine. Reads the per-section Tools block from `plan.md`. Dispatches the executor and the validator(s) in the right order. Enforces the iteration cap. Never commits, never edits files.
 2. `bpe:step-executor` (worker). Three modes: `implement` (TDD, no commit), `fix` (apply validator findings, no commit), `finalize` (session summary, commit, push). Owns the commit transaction in `finalize` only.
 3. `bpe:validator` (QA). Read-only review of the uncommitted diff against MCPs and skills passed in by the orchestrator. Emits a structured findings block. Never edits, never commits, never dispatches other agents.
 
@@ -18,8 +18,8 @@ For each unchecked item in `todo.md` the orchestrator runs this state machine. S
 1. Dispatch step-executor (mode=implement)
      => TDD; leaves work uncommitted; returns "ready for validation"
 
-2. Look up validators for the current section in plan.md.
-     If "Validator consults: none" => skip to step 6.
+2. Read the current section's Tools block (or legacy "Validator consults:") in plan.md.
+     If it is "none" => skip to step 6.
 
 3. iter = 1
 
@@ -109,9 +109,36 @@ The orchestrator always passes explicit MCP and skill lists. If the validator is
 
 The fallback path is for human debugging, not the automated loop. The validator's `notes` field should record which tools were consulted, regardless of how they were chosen.
 
+## Tools block
+
+Plan sections declare their tooling in a `**Tools:**` block immediately under the section heading:
+
+```markdown
+**Tools:**
+- Skills: temporal:temporal-developer
+- MCPs: mcp__temporal-docs__search_temporal_knowledge_sources
+- Linters: ruff check --output-format=json
+```
+
+Three sub-fields, each comma-separated:
+
+- `Skills`: skill identifiers. The executor invokes them while working; the validator consults them when reviewing the diff.
+- `MCPs`: MCP tool or server names. Same dual use as Skills.
+- `Linters`: shell commands. Validator-only; the validator runs them verbatim against the working tree as adversarial review.
+
+A `**Tools:**` block per section shadows the section default (the project-wide `## Available tooling` list in spec.md).
+A `**Tools:**` block per step, placed immediately under the step's `### Step X:` heading, shadows the section default further: that step resolves against its own block alone.
+A literal `**Tools:** none` disables validator dispatch for every step in that section.
+
+### Transitional read of legacy plans
+
+Plans written before 0.6.0 declare `**Validator consults:**` instead of `**Tools:**`.
+The validator and orchestrator honor the legacy block name: treat it as a Tools block declaring Skills and MCPs with an empty Linters list.
+New plans emit `**Tools:**` only.
+
 ## Tool-list propagation
 
-`bpe:brainstorm` enumerates available MCPs and skills, asks the user which apply to the project, and writes them to `spec.md` under `## Available tooling`. `bpe:plan` propagates that list per-section under `**Validator consults:**`. `bpe:goal` reads the per-section block when dispatching the validator for a step in that section.
+`bpe:brainstorm` enumerates available MCPs and skills, asks the user which apply to the project, and writes them to `spec.md` under `## Available tooling`. `bpe:plan` propagates that list per-section under `**Tools:**` (legacy plans: `**Validator consults:**`, per the transitional read above). `bpe:goal` reads the per-section block when dispatching the validator for a step in that section.
 
 ## Hard rules
 

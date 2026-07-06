@@ -25,12 +25,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Feature/Task sections added; meta-prompting note; heuristic; two consistency edits (intro line + Prompt Generation Requirement 4) so the body no longer claims every prompt is RED-GREEN-REFACTOR
   - [x] Verify: greps for Task/Feature/Meta-prompting succeed (3/1/2); frontmatter YAML parses; `claude plugin validate ./bpe` exits 0 (interactive /bpe:plan invocation deferred to a reloaded session, same as A1/A2)
   - [x] Documented (in skill body)
-- [ ] Step B2: Add per-section Tools block schema to `/bpe:plan` skill
-  - [ ] Scope defined
-  - [ ] Tooling loaded
-  - [ ] Tools block schema added; per-step override note; backwards-compat note; validator-protocol.md updated
-  - [ ] Verify: greps for Tools:, Validator consults, Tools block succeed
-  - [ ] Documented (in skill body + validator-protocol.md)
+- [x] Step B2: Add per-section Tools block schema to `/bpe:plan` skill
+  - [x] Scope defined (bpe/skills/plan/SKILL.md, bpe/references/validator-protocol.md)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Tools block schema added (section replaced, Output Format bullet updated); per-step override note; backwards-compat note; validator-protocol.md "Tools block" section + Tool-list propagation aligned
+  - [x] Verify: greps for Tools:, Validator consults, Tools block succeed; `claude plugin validate ./bpe` exits 0
+  - [x] Documented (in skill body + validator-protocol.md)
 - [ ] Step B3: Make execute-plan skill and step-executor agent template-agnostic
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:skill-development, plugin-dev:agent-development)

@@ -159,34 +159,54 @@ The Task template's Scope / Tooling / Do / Verify / Document sub-steps are still
 
 Make sure and separate each prompt section. Use markdown. Each prompt should be tagged as text using code tags. The goal is to output prompts that execute-plan can follow step-by-step, but context and architectural decisions are important as well.
 
-## Per-section validator declarations
+## Per-section Tools block
 
-Read spec.md's `## Available tooling` section before drafting plan.md. For each plan section (top-level `##` heading in plan.md), decide which subset of the project's available MCPs and skills the `bpe:validator` should consult when reviewing diffs from that section's steps. Record the decision immediately under the section heading using this exact format:
+Read spec.md's `## Available tooling` section before drafting plan.md.
+For each plan section (top-level `##` heading in plan.md), decide which subset of the project's available skills, MCPs, and linters applies to that section's steps.
+Both consumers draw from the same block: the executor invokes the Skills and consults the MCPs while doing the work; the `bpe:validator` consults the Skills and MCPs for guidance AND runs the Linters as adversarial review.
+Record the decision immediately under the section heading using this exact format:
 
 ```markdown
 ## Section 2: Workflow implementation
 
-**Validator consults:**
-- MCPs: mcp__temporal-docs__search_temporal_knowledge_sources
+**Tools:**
 - Skills: temporal:temporal-developer
+- MCPs: mcp__temporal-docs__search_temporal_knowledge_sources
+- Linters: ruff check --output-format=json
 ```
+
+Sub-field values are comma-separated.
+Linters entries are shell commands the validator runs verbatim against the working tree.
+Use a literal `none` for an empty sub-field (e.g. `- Linters: none`).
 
 Sections that do not need domain validation (e.g. wiring config files, writing fixtures, scaffolding the project layout) use:
 
 ```markdown
-**Validator consults:** none
+**Tools:** none
 ```
 
 A literal `none` value disables the validator dispatch for every step in that section.
 
-Guidance for picking validators per section:
+### Shadowing (section default and per-step override)
 
-- A section that touches `workflows/`, `activities/`, or other Temporal-specific paths should consult the Temporal MCP and skill.
-- A section that writes Python application code should consult `python:python` for style and toolchain rules.
+- spec.md's `## Available tooling` list is the project-wide pool.
+- A `**Tools:**` block per section shadows the section default: it narrows the project-wide pool down to what that section's steps actually need.
+- A `**Tools:**` block per step (placed immediately under the step's `### Step X:` heading) shadows the section default further: that step resolves against its own block and ignores the section's.
+
+### Backwards compatibility
+
+Existing plans that declare the legacy `**Validator consults:**` block still work.
+The validator honors the old block name and treats it as a Tools block declaring Skills and MCPs with an empty Linters list.
+New plans emit `**Tools:**` only; never write `**Validator consults:**` in fresh output.
+
+### Guidance for picking tools per section
+
+- A section that touches `workflows/`, `activities/`, or other Temporal-specific paths should declare the Temporal MCP and skill.
+- A section that writes Python application code should declare `python:python` for style and toolchain rules, and the project's Python linter command under Linters.
 - A section that writes pure scaffolding, fixtures, or framework-trivial code should declare `none`.
-- Validator passes cost real tokens. Lean toward `none` when the consulted tools would have nothing useful to say.
+- Validator passes cost real tokens. Lean toward `none` when the declared tools would have nothing useful to say.
 
-If spec.md's `## Available tooling` section is empty (no MCPs, no skills), every plan section declares `Validator consults: none`. The plan still gets written; the validator-aware loop simply runs zero validator dispatches.
+If spec.md's `## Available tooling` section is empty (no MCPs, no skills), every plan section declares `**Tools:** none`. The plan still gets written; the validator-aware loop simply runs zero validator dispatches.
 
 If spec.md has no `## Available tooling` section at all (legacy spec), proceed as if every section declares `none`. Do not retroactively prompt the user; the user can re-run `/bpe:brainstorm` if they want validators on this project.
 
@@ -197,7 +217,7 @@ Store the plan in @plan.md with:
 - Each step as a detailed prompt with numbered sub-instructions
 - Implementation Guidelines section
 - Success Metrics section
-- The `**Validator consults:**` block immediately under each section heading
+- The `**Tools:**` block immediately under each section heading
 
 Also create a @todo.md that:
 - Mirrors the plan.md structure with checkboxes
