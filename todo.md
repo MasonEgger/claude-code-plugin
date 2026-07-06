@@ -64,12 +64,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component E: Blindspot pass in brainstorm and retrofit
 
-- [ ] Step E1: Add Step 0 blindspot pass to `bpe/skills/brainstorm/SKILL.md`
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Step 0 added; Saving section updated to expect `## Starting context`
-  - [ ] Verify: greps succeed; live invocation shows blindspot pass
-  - [ ] Documented (in skill body)
+- [x] Step E1: Add Step 0 blindspot pass to `bpe/skills/brainstorm/SKILL.md`
+  - [x] Scope defined (bpe/skills/brainstorm/SKILL.md only; retrofit stays on its D1 placeholder until E2)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Step 0 added before the substantive Q&A (one starting-context question; 3-5 unknown-unknowns framed "you may want to consider"; verbatim `## Starting context` record; proceed to standard Q&A); Saving section updated to place `## Starting context` between `# <title>` and `## Project overview`, matching D1's retrofit ordering
+  - [x] Verify: greps succeed (Blindspot pass 1, Starting context 2); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0 (live `/bpe:brainstorm` blindspot-pass check deferred to a reloaded session, same as A1/B1/C1/C2/D1; updated skills don't take effect until plugin reload)
+  - [x] Documented (in skill body)
 - [ ] Step E2: Add Step 0 blindspot pass to `bpe/skills/retrofit/SKILL.md` and canonical doc
   - [ ] Scope defined
   - [ ] Tooling loaded

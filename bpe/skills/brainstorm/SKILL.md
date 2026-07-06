@@ -10,6 +10,15 @@ Ask me one question at a time so we can develop a thorough, step-by-step spec fo
 
 Let's do this iteratively and dig into every relevant detail. Remember, only one question at a time.
 
+## Step 0: Blindspot pass
+
+Run this pass BEFORE the substantive Q&A. It calibrates the rest of the session to what the user already knows.
+
+1. Ask ONE question about the user's starting context: domain familiarity, prior attempts at this idea, experience with this codebase (if one exists).
+2. Given the answer, surface 3-5 unknown-unknowns: questions the user probably doesn't know to ask, framed as "you may want to consider" rather than "you must answer". The user may engage with any, all, or none of them.
+3. Record the user's context answer verbatim in spec.md under `## Starting context`. Create the section if it doesn't exist. Do not paraphrase; the plan writer and validator calibrate against the user's own words.
+4. Proceed to the standard one-question-at-a-time Q&A.
+
 ## Critical Focus Areas
 
 **TDD Implementation Ready**: Ensure the spec includes requirements for YOUR application logic that can be converted into failing tests first. Focus on business rules, data validation, error handling, and custom algorithms that YOU will implement, not framework or library behavior. Think about what application-specific behaviors need verification.
@@ -55,6 +64,6 @@ If the user says no validators apply at the project level, write the section wit
 
 ## Saving
 
-Once we are done, save the spec as @spec.md. Make sure the `## Available tooling` section is present near the top of the spec (after the project overview, before the detailed requirements).
+Once we are done, save the spec as @spec.md. Place the `## Starting context` section from Step 0 between `# <title>` and `## Project overview`. Make sure the `## Available tooling` section is present near the top of the spec (after the project overview, before the detailed requirements).
 
 Here's the idea:
