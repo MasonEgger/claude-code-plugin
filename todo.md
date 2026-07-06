@@ -46,12 +46,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] File created with frontmatter (model: haiku, read-only tools; `color: green` added per agent-development skill, matching existing agents) and body (input/output contracts, read-only invariant, typical dispatches)
   - [x] Verify: file exists; frontmatter YAML parses and name/description/model/tools match plan exactly; `claude plugin validate ./bpe` exits 0 (live Agent-tool test dispatch deferred to a reloaded session, same as A1/B1; new agents don't register until plugin reload)
   - [x] Documented (README "Agents" inventory section added listing step-executor, validator, cheap-research)
-- [ ] Step C2: Wire cheap-research into `/bpe:plan` discovery; add `--no-discover` flag
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Plan skill dispatches cheap-research; --no-discover flag handled; cache to spec.md's External tool candidates section; brainstorm extended
-  - [ ] Verify: greps succeed; end-to-end dispatch works; --no-discover skips
-  - [ ] Documented (in plan skill body + README)
+- [x] Step C2: Wire cheap-research into `/bpe:plan` discovery; add `--no-discover` flag
+  - [x] Scope defined (bpe/skills/plan/SKILL.md, bpe/skills/brainstorm/SKILL.md, README row)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Plan skill Tool discovery section added (Pass 1 session enumeration + Pass 2 cheap-research dispatch with sample prompt matching the C1 agent's input/output contract); --no-discover flag handled (plus `argument-hint` frontmatter consistency touch); cache to spec.md's External tool candidates section with skip-when-populated and --refresh-discover noted as future work; brainstorm Tool discovery step 4 added with old record step renumbered to 5
+  - [x] Verify: greps succeed (cheap-research count 2, no-discover shown, External tool candidates shown); both frontmatters parse as YAML; `claude plugin validate ./bpe` exits 0 (end-to-end `/bpe:plan` and `/bpe:plan --no-discover` runs deferred to a reloaded session, same as A1/B1/C1; updated skills don't take effect until plugin reload and slash commands aren't invocable from a subagent)
+  - [x] Documented (in plan skill body + README /bpe:plan row noting --no-discover)
 
 ## Component D: /bpe:retrofit skill
 

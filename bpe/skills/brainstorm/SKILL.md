@@ -31,7 +31,8 @@ Procedure:
 1. List candidate MCPs. Use `ToolSearch` with a search query suited to the project's domain (e.g. for a Temporal project, search for "temporal"; for a Postgres project, search for "postgres"). Capture the MCP server names that come back. Also list any plugin-namespaced MCPs visible in the session (e.g. `mcp__claude_ai_Google_Drive__*` for a project that involves Drive). If none look relevant, that's fine; the list can be empty.
 2. List candidate skills. Read the available skills from the session reminder. Pick those whose descriptions mention the project's domain (e.g. `temporal:temporal-developer`, `python:python`, `content-design:tutorial-writing`).
 3. Ask the user ONE question listing the candidates: "These MCPs and skills look potentially relevant to your project. Which should the validator consult during goal-mode runs? Drop any that don't apply; add any I missed."
-4. Record the user's confirmed set in spec.md.
+4. If the user wants suggestions for external tools not in the session, dispatch the `bpe:cheap-research` subagent with the project domain; present the shortlist for user confirmation. Dispatch via the Agent tool with a single research question naming the project domain; the agent returns a ranked list of at most 10 entries (`<name> :: <one-line relevance note> :: <source URL or path>`) or the line `no relevant results` followed by one sentence naming what was searched. Only confirmed entries go into spec.md.
+5. Record the user's confirmed set in spec.md.
 
 The output section format:
 

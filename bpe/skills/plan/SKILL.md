@@ -2,6 +2,7 @@
 name: plan
 description: Transform spec.md into an implementation roadmap (plan.md + todo.md) of TDD Feature steps and non-TDD Task steps
 disable-model-invocation: true
+argument-hint: "[--no-discover]"
 ---
 
 # Plan Command
@@ -159,9 +160,44 @@ The Task template's Scope / Tooling / Do / Verify / Document sub-steps are still
 
 Make sure and separate each prompt section. Use markdown. Each prompt should be tagged as text using code tags. The goal is to output prompts that execute-plan can follow step-by-step, but context and architectural decisions are important as well.
 
+## Tool discovery
+
+Run tool discovery before drafting the per-section Tools blocks.
+Discovery has two passes.
+
+**Pass 1: session enumeration (existing).**
+Read spec.md's `## Available tooling` section.
+`/bpe:brainstorm` populated it by enumerating the MCPs and skills present in the session.
+This list seeds the project-wide pool that the per-section Tools blocks narrow down; Pass 2 results cached under `## External tool candidates` join it.
+
+**Pass 2: external discovery via `bpe:cheap-research` (on by default).**
+Dispatch the `bpe:cheap-research` subagent through the Agent tool to find marketplace skills and public plugins the session pool misses.
+Sample dispatch prompt:
+
+> Given the project domain in spec.md's Project overview, find installed marketplace skills and public plugins that could apply. Rank by relevance. Return up to 10.
+
+Inline the Project overview text (or a one-paragraph digest) in the dispatch alongside the question; the agent can Read spec.md itself, but pasting the overview saves it a round trip.
+Per the agent's output contract, the return is a ranked plain-text list of at most 10 entries, one line per result as `<name> :: <one-line relevance note> :: <source URL or path>`, or the line `no relevant results` followed by one sentence naming what was searched when the search comes up empty.
+Treat returned entries as candidates, not automatic additions: fold one into a Tools block only when it plausibly applies to that section, and never invent tool names the agent did not cite.
+
+### The `--no-discover` flag
+
+If `--no-discover` appears in $ARGUMENTS, skip Pass 2 entirely.
+Pass 1 still runs; it is a file read and costs nothing.
+Use the flag when the session pool already covers the project domain or when the user wants a fast, offline planning pass.
+
+### Caching results to spec.md
+
+After Pass 2 returns usable results, append them to spec.md under a `## External tool candidates` section.
+If the section is absent, create it directly after `## Available tooling`.
+Keep each candidate on its own line in the agent's `<name> :: <note> :: <source>` shape so provenance survives.
+On later `/bpe:plan` runs, skip Pass 2 when `## External tool candidates` is already populated and reuse the cached list.
+(Re-running discovery with a `--refresh-discover` flag is future work, not yet implemented.)
+A `no relevant results` return caches nothing: leave spec.md untouched and tell the user discovery found nothing.
+
 ## Per-section Tools block
 
-Read spec.md's `## Available tooling` section before drafting plan.md.
+Read spec.md's `## Available tooling` section (Pass 1 of Tool discovery above) before drafting plan.md.
 For each plan section (top-level `##` heading in plan.md), decide which subset of the project's available skills, MCPs, and linters applies to that section's steps.
 Both consumers draw from the same block: the executor invokes the Skills and consults the MCPs while doing the work; the `bpe:validator` consults the Skills and MCPs for guidance AND runs the Linters as adversarial review.
 Record the decision immediately under the section heading using this exact format:
@@ -189,7 +225,7 @@ A literal `none` value disables the validator dispatch for every step in that se
 
 ### Shadowing (section default and per-step override)
 
-- spec.md's `## Available tooling` list is the project-wide pool.
+- spec.md's `## Available tooling` list, plus any cached `## External tool candidates` entries, is the project-wide pool.
 - A `**Tools:**` block per section shadows the section default: it narrows the project-wide pool down to what that section's steps actually need.
 - A `**Tools:**` block per step (placed immediately under the step's `### Step X:` heading) shadows the section default further: that step resolves against its own block and ignores the section's.
 
@@ -206,7 +242,7 @@ New plans emit `**Tools:**` only; never write `**Validator consults:**` in fresh
 - A section that writes pure scaffolding, fixtures, or framework-trivial code should declare `none`.
 - Validator passes cost real tokens. Lean toward `none` when the declared tools would have nothing useful to say.
 
-If spec.md's `## Available tooling` section is empty (no MCPs, no skills), every plan section declares `**Tools:** none`. The plan still gets written; the validator-aware loop simply runs zero validator dispatches.
+If the project-wide pool is empty (spec.md's `## Available tooling` lists no MCPs and no skills, and no `## External tool candidates` entries are cached), every plan section declares `**Tools:** none`. The plan still gets written; the validator-aware loop simply runs zero validator dispatches.
 
 If spec.md has no `## Available tooling` section at all (legacy spec), proceed as if every section declares `none`. Do not retroactively prompt the user; the user can re-run `/bpe:brainstorm` if they want validators on this project.
 
