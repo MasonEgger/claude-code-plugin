@@ -1,7 +1,7 @@
 ---
 name: step-executor
 description: |
-  Executes ONE BPE step as the worker for /bpe:goal autonomous mode. Operates in one of three modes set by the orchestrator: `implement` (TDD, no commit), `fix` (apply validator findings, no commit), `finalize` (session summary, single commit, push). Backwards-compatible default with no mode argument runs the original bundled flow (implement + finalize in one dispatch).
+  Executes ONE BPE step as the worker for /bpe:goal autonomous mode. Operates in one of three modes set by the orchestrator: `implement` (execute the plan step's sub-steps, no commit), `fix` (apply validator findings, no commit), `finalize` (session summary, single commit, push). Backwards-compatible default with no mode argument runs the original bundled flow (implement + finalize in one dispatch).
 
   NEVER commit to main/master. NEVER use without a goal-driven parent. For interactive single-step work, use /bpe:execute-plan directly instead of dispatching this agent.
 model: inherit
@@ -40,7 +40,7 @@ Procedure:
 
 1. Clean-tree check. `git status --short`. Abort with `Failure:` if non-empty. Echo the offending output. A dirty tree at implement start means the prior step did not finalize, OR the orchestrator broke SEQUENTIAL DISPATCHES.
 2. Branch check. `git rev-parse --abbrev-ref HEAD`. Abort on `main`/`master`. Echo.
-3. TDD step. Read `${CLAUDE_PLUGIN_ROOT}/skills/execute-plan/SKILL.md` and execute its numbered procedure inline. Failing test, minimal code to pass, refactor, mark the todo item.
+3. Execute the sub-steps for the current todo item as written in plan.md. Read `${CLAUDE_PLUGIN_ROOT}/skills/execute-plan/SKILL.md` and follow its numbered procedure inline. Honor whichever template shape the step declares (Feature RED/GREEN/REFACTOR or Task Scope/Tooling/Do/Verify/Document), then mark the todo item.
 4. Branch re-check (defense in depth). Abort if changed to `main`/`master`.
 5. Test run. Run the project's test command. Capture the result. Abort with `Failure:` if not exit 0; do not hand a red diff to the validator.
 6. Tree snapshot. Run `git diff --shortstat` and capture for the report.

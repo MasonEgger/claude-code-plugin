@@ -31,12 +31,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Tools block schema added (section replaced, Output Format bullet updated); per-step override note; backwards-compat note; validator-protocol.md "Tools block" section + Tool-list propagation aligned
   - [x] Verify: greps for Tools:, Validator consults, Tools block succeed; `claude plugin validate ./bpe` exits 0
   - [x] Documented (in skill body + validator-protocol.md)
-- [ ] Step B3: Make execute-plan skill and step-executor agent template-agnostic
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development, plugin-dev:agent-development)
-  - [ ] execute-plan wording changed; step-executor mode=implement step 3 rewritten; step-executor-protocol.md note added
-  - [ ] Verify: no "TDD step" remains; "Feature or Task" note added; "sub-steps as written" wording present
-  - [ ] Documented (in agent/skill bodies)
+- [x] Step B3: Make execute-plan skill and step-executor agent template-agnostic
+  - [x] Scope defined (bpe/skills/execute-plan/SKILL.md, bpe/agents/step-executor.md, bpe/references/step-executor-protocol.md)
+  - [x] Tooling loaded (plugin-dev:skill-development, plugin-dev:agent-development)
+  - [x] execute-plan step 7 wording changed + mixed-template note added; step-executor mode=implement step 3 rewritten; step-executor-protocol.md Mode contracts note added; consistency touches (Key Requirements line, agent frontmatter description, protocol Role bullet) so no TDD-only wording contradicts the templates
+  - [x] Verify: "TDD step" count 0 in step-executor.md; "Feature or Task" count 1 in step-executor-protocol.md; "sub-steps as written" count 1 in execute-plan SKILL.md; `claude plugin validate ./bpe` exits 0
+  - [x] Documented (in agent/skill bodies)
 
 ## Component C: bpe:cheap-research subagent + tool discovery pass
 

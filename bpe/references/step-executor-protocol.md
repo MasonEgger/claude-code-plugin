@@ -8,7 +8,7 @@ Parallel to `references/validator-protocol.md`, which owns the whole-loop state 
 
 `bpe:step-executor` is the worker for `/bpe:goal` autonomous runs. It does one BPE step per dispatch. The orchestrator sets a `Mode:` field in the dispatch prompt that routes the executor into one of four flows:
 
-- `Mode: implement`. TDD work for the next unchecked `todo.md` item. Leaves the tree dirty. No commit.
+- `Mode: implement`. Execute the plan's sub-steps for the next unchecked `todo.md` item. Leaves the tree dirty. No commit.
 - `Mode: fix`. Apply validator findings. Dirty tree in, dirty tree out. No commit.
 - `Mode: finalize`. Final test run, session summary, single commit, push. The only mode that mutates git state.
 - No `Mode:` line. Backwards-compatible bundled flow. Runs implement then finalize in one dispatch. Retained for pre-validator callers.
@@ -31,7 +31,7 @@ Each row is a hard promise between the executor and the orchestrator. Violating 
 
 Per-mode additions:
 
-- `implement`: Dirty tree at start aborts with `Failure:`. This signals either the prior step did not finalize, or the orchestrator broke the SEQUENTIAL DISPATCHES rule.
+- `implement`: Executes whichever template shape plan.md declares for the current step (Feature or Task); the numbered sub-steps are followed as written. Dirty tree at start aborts with `Failure:`. This signals either the prior step did not finalize, or the orchestrator broke the SEQUENTIAL DISPATCHES rule.
 - `fix`: Receives a `findings` JSON block matching the validator-protocol schema. Groups `block` and `warn` as must-fix; `info` is not fixed here (the orchestrator hands `info` to `finalize` for the commit body). A malformed findings block is a hard `Failure:`.
 - `finalize`: EXACTLY one commit per dispatch. No follow-ups, no fixups, no amends, no `--no-verify`. A pre-commit hook rejection is `Failure:`; do not retry, do not bypass. If an issue is discovered after commit, that's `Failure:` too. The orchestrator will not make a follow-up commit.
 - `bundled`: Runs `implement` then `finalize` inline. No validator handoff between them. Pre-validator legacy path.
