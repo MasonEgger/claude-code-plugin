@@ -27,6 +27,14 @@ As of 0.6.0, BPE commands are implemented as skills.
 Invocation is unchanged: each `/bpe:<name>` above works exactly as before.
 The underlying file layout moved from `commands/<name>.md` to `skills/<name>/SKILL.md`.
 
+## Agents
+
+| Agent | Model | Purpose |
+|---|---|---|
+| `bpe:step-executor` | inherit | Worker for `/bpe:goal` autonomous runs. Executes one plan step per dispatch in `implement`, `fix`, or `finalize` mode. |
+| `bpe:validator` | inherit | Read-only QA reviewer dispatched between `implement` and `finalize`. Checks the uncommitted diff against declared skills and MCPs, returns a structured findings block. |
+| `bpe:cheap-research` | haiku | Fast, cheap external research: tool discovery, docs lookup, quick fact-checks. Dispatched by `/bpe:plan`, `/bpe:brainstorm`, and `/bpe:retrofit` when they need external info. |
+
 ## The BPE Loop
 
 1. **Brainstorm** - Develop a thorough specification through iterative dialogue

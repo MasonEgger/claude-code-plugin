@@ -40,12 +40,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component C: bpe:cheap-research subagent + tool discovery pass
 
-- [ ] Step C1: Create `bpe:cheap-research` subagent at `bpe/agents/cheap-research.md`
-  - [ ] Scope defined (new agent file)
-  - [ ] Tooling loaded (plugin-dev:agent-development)
-  - [ ] File created with frontmatter (model: haiku, read-only tools) and body
-  - [ ] Verify: file exists; frontmatter parses; test dispatch returns shortlist
-  - [ ] Documented (README agent inventory updated)
+- [x] Step C1: Create `bpe:cheap-research` subagent at `bpe/agents/cheap-research.md`
+  - [x] Scope defined (new agent file)
+  - [x] Tooling loaded (plugin-dev:agent-development)
+  - [x] File created with frontmatter (model: haiku, read-only tools; `color: green` added per agent-development skill, matching existing agents) and body (input/output contracts, read-only invariant, typical dispatches)
+  - [x] Verify: file exists; frontmatter YAML parses and name/description/model/tools match plan exactly; `claude plugin validate ./bpe` exits 0 (live Agent-tool test dispatch deferred to a reloaded session, same as A1/B1; new agents don't register until plugin reload)
+  - [x] Documented (README "Agents" inventory section added listing step-executor, validator, cheap-research)
 - [ ] Step C2: Wire cheap-research into `/bpe:plan` discovery; add `--no-discover` flag
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:skill-development)
