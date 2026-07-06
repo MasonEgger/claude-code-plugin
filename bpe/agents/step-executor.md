@@ -44,7 +44,8 @@ Procedure:
 4. Branch re-check (defense in depth). Abort if changed to `main`/`master`.
 5. Test run. Run the project's test command. Capture the result. Abort with `Failure:` if not exit 0; do not hand a red diff to the validator.
 6. Tree snapshot. Run `git diff --shortstat` and capture for the report.
-7. Emit the `Implement-Report` block (template below). Do not commit. Do not push.
+7. Deviations log. If your work in step 3 deviated from plan.md's prescription for this step (edge case, blocked path, better approach found mid-work), append an entry to `.ai-sessions/implementation-notes.md` under a `## Step N` heading. Format: `- Plan said: <what>` / `- Deviated: <what actually happened>` / `- Impact: <consequence>`. If no deviation, skip. Create the file if it doesn't exist. It is gitignored; never stage it.
+8. Emit the `Implement-Report` block (template below). Do not commit. Do not push.
 
 ## Mode: fix
 
@@ -89,7 +90,7 @@ Emitted when the dispatch prompt has no `Mode:` line. Retained for pre-validator
 
 Procedure:
 
-1. Run steps 1-6 of `Mode: implement` (all except the Implement-Report emission).
+1. Run steps 1-7 of `Mode: implement` (all except the Implement-Report emission).
 2. Skip any validator handoff.
 3. Run steps 1-8 of `Mode: finalize` (all except the Finalize-Report emission).
 4. Emit the bundled report block (template below).

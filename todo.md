@@ -79,12 +79,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component F: implementation-notes.md deviations log
 
-- [ ] Step F1: Extend `step-executor` mode=implement to write deviations
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:agent-development)
-  - [ ] Step 6.5 added to mode=implement; gitignore entry added
-  - [ ] Verify: greps succeed; test dispatch writes entry
-  - [ ] Documented (in agent body)
+- [x] Step F1: Extend `step-executor` mode=implement to write deviations
+  - [x] Scope defined (bpe/agents/step-executor.md + .gitignore; repo working copy only, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:agent-development)
+  - [x] Deviations-log step inserted into Mode: implement between Tree snapshot and Implement-Report emission, renumbered to whole numbers (new step 7; report emission became step 8; Bundled cross-reference updated to "steps 1-7"); entry format per plan (`## Step N` heading with `- Plan said:` / `- Deviated:` / `- Impact:` lines, skip when no deviation, create file if absent); `.ai-sessions/implementation-notes.md` appended to .gitignore
+  - [x] Verify: greps succeed (step-executor implementation-notes.md 1, .gitignore implementation-notes.md 1); step position and renumbering confirmed by reading the section; `claude plugin validate ./bpe` exits 0 (live test dispatch that writes an entry deferred to a reloaded session, same as A1/B1/C1/C2/D1/E1/E2; updated agents don't take effect until plugin reload)
+  - [x] Documented (in agent body)
 - [ ] Step F2: Extend mode=finalize to absorb deviations into session summary and clear
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:agent-development, plugin-dev:skill-development)
