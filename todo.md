@@ -55,12 +55,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component D: /bpe:retrofit skill
 
-- [ ] Step D1: Create `bpe/skills/retrofit/SKILL.md`
-  - [ ] Scope defined (new skill file)
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] SKILL.md created with frontmatter + 5-step procedure; --replace flag; blindspot placeholder cross-referenced to Component E
-  - [ ] Verify: file exists; --replace refuses without flag when spec exists; produces spec on spec-less repo
-  - [ ] Documented (README command table row added)
+- [x] Step D1: Create `bpe/skills/retrofit/SKILL.md`
+  - [x] Scope defined (new skill file)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] SKILL.md created with frontmatter (name, description, disable-model-invocation, argument-hint "[--replace]") + 5-step procedure; --replace refuse-unless guard; blindspot placeholder cross-referenced to Component E; tooling Q&A shares Component C's discovery pass incl. bpe:cheap-research dispatch; spec.md output matches brainstorm's Available tooling format
+  - [x] Verify: file exists; frontmatter parses as YAML with all four fields asserted; `claude plugin validate ./bpe` exits 0 (live `/bpe:retrofit` refuse/produce-spec invocations deferred to a reloaded session, same as A1/B1/C1/C2; new skills don't register until plugin reload)
+  - [x] Documented (README command table row added for /bpe:retrofit)
 
 ## Component E: Blindspot pass in brainstorm and retrofit
 

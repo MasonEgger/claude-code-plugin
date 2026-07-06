@@ -11,6 +11,7 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | Command | Purpose |
 |---|---|
 | `/bpe:brainstorm` | Iterative Q&A to develop a project specification (`spec.md`) |
+| `/bpe:retrofit` | Retrofit a BPE-compatible `spec.md` onto an existing project that lacks one. Reads repo state, runs a shortened Q&A on the gaps; pass `--replace` to overwrite an existing spec |
 | `/bpe:plan` | Transform spec into implementation roadmap (`plan.md` + `todo.md`). Dispatches `bpe:cheap-research` for external tool discovery by default; pass `--no-discover` to skip it |
 | `/bpe:execute-plan` | Implement one step at a time following strict TDD |
 | `/bpe:gh-issue` | Fetch a GitHub issue and route to brainstorm or plan |
