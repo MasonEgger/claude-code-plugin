@@ -1,6 +1,6 @@
 # Session Management
 
-This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
+This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` section (see "Starting Context Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write.
 
 ## Purpose
 
@@ -216,3 +216,12 @@ In both cases: default to keep on uncertainty; delete only on explicit confirmat
 ### Not auto-read
 
 Unlike session summaries, handoffs are **not** auto-read by `/bpe:execute-plan` at startup. The next agent should run `/bpe:handoff continue` to read an existing handoff, then `/bpe:handoff close` once the work has been picked up. If `/bpe:execute-plan` notices a leftover handoff file, it points the user at `/bpe:handoff continue` rather than consuming the file itself.
+
+## Starting Context Section (spec.md)
+
+The blindspot pass in `/bpe:brainstorm` (Step 0) and `/bpe:retrofit` (procedure step 3) records the user's starting-context answer in spec.md.
+This section is the canonical definition of that record; both skills conform to it.
+
+- **Format**: an H2 heading, `## Starting context`, followed by the user's context answer verbatim. Do not paraphrase, summarize, or clean up the user's words.
+- **Placement**: between `# <title>` and `## Project overview` in spec.md.
+- **Purpose**: calibrates the plan writer and the validator. `/bpe:plan` reads it to pitch step granularity to what the user already knows; the `bpe:validator` agent reads it to weight findings against the user's stated familiarity.

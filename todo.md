@@ -70,12 +70,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Step 0 added before the substantive Q&A (one starting-context question; 3-5 unknown-unknowns framed "you may want to consider"; verbatim `## Starting context` record; proceed to standard Q&A); Saving section updated to place `## Starting context` between `# <title>` and `## Project overview`, matching D1's retrofit ordering
   - [x] Verify: greps succeed (Blindspot pass 1, Starting context 2); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0 (live `/bpe:brainstorm` blindspot-pass check deferred to a reloaded session, same as A1/B1/C1/C2/D1; updated skills don't take effect until plugin reload)
   - [x] Documented (in skill body)
-- [ ] Step E2: Add Step 0 blindspot pass to `bpe/skills/retrofit/SKILL.md` and canonical doc
-  - [ ] Scope defined
-  - [ ] Tooling loaded
-  - [ ] retrofit skill Step 3 placeholder replaced; session-management.md Starting context doc added
-  - [ ] Verify: greps succeed; live invocation runs Step 0
-  - [ ] Documented (session-management.md is canonical)
+- [x] Step E2: Add Step 0 blindspot pass to `bpe/skills/retrofit/SKILL.md` and canonical doc
+  - [x] Scope defined (bpe/skills/retrofit/SKILL.md + bpe/references/session-management.md)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] retrofit skill Step 3 placeholder replaced with the full blindspot pass mirroring brainstorm's E1 Step 0 (one starting-context question informed by repo state; 3-5 unknown-unknowns framed "you may want to consider"; verbatim answer kept for step 5's `## Starting context`; proceed to shortened Q&A); stale "Component E adds the full blindspot pass" cross-reference from D1 removed; session-management.md gained a "Starting Context Section (spec.md)" doc covering format (H2, verbatim), placement (between `# <title>` and `## Project overview`), and purpose (calibrates plan writer and validator), plus an intro pointer
+  - [x] Verify: greps succeed (retrofit "Blindspot pass" 1, session-management "Starting context" 2, retrofit "placeholder" 0); frontmatter parses as YAML with all four fields asserted; `claude plugin validate ./bpe` exits 0 (live `/bpe:retrofit` Step 0 check deferred to a reloaded session, same as A1/B1/C1/C2/D1/E1; updated skills don't take effect until plugin reload)
+  - [x] Documented (session-management.md is the canonical doc; retrofit step 3 points to it)
 
 ## Component F: implementation-notes.md deviations log
 

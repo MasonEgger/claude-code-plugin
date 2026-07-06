@@ -28,11 +28,12 @@ The resulting spec.md matches the format `/bpe:brainstorm` produces, so `/bpe:pl
    If the language is detectable from the manifests, read the top-level module docstrings (or equivalent package-level docs) of the main source directories.
    Use what these reveal to pre-fill draft answers, so the Q&A in step 4 asks only about gaps.
 
-3. **Blindspot pass (placeholder).**
-   Short version: ask ONE question about the user's starting context (domain familiarity, prior attempts, experience with this codebase).
-   Given the answer, surface 3-5 unknown-unknowns as questions the user probably doesn't know to ask, framed as "you may want to consider" rather than "you must answer".
-   Keep the user's context answer verbatim for the `## Starting context` section in step 5.
-   Component E adds the full blindspot pass shared with `/bpe:brainstorm`; this skill uses this placeholder version until E lands.
+3. **Blindspot pass.**
+   Run this pass BEFORE the shortened Q&A. It calibrates the rest of the session to what the user already knows. Same shape as `/bpe:brainstorm` Step 0; `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` documents the resulting `## Starting context` section canonically.
+   1. Ask ONE question about the user's starting context: domain familiarity, prior attempts at this idea, experience with this codebase. The repo state from step 2 informs the question; it does not answer it.
+   2. Given the answer, surface 3-5 unknown-unknowns: questions the user probably doesn't know to ask, framed as "you may want to consider" rather than "you must answer". The user may engage with any, all, or none of them.
+   3. Keep the user's context answer verbatim; step 5 writes it into spec.md under `## Starting context`. Do not paraphrase; the plan writer and validator calibrate against the user's own words.
+   4. Proceed to the shortened Q&A in step 4.
 
 4. **Shortened Q&A.**
    One question at a time, same rule as `/bpe:brainstorm`.
