@@ -91,12 +91,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] session-summary Step 2 substep added; step-executor finalize note added; session-management.md format section added (plus a directory-structure bullet for the file)
   - [x] Verify: greps succeed (session-summary "Deviations from Plan" 1, session-management implementation-notes 4, step-executor implementation-notes 2); `claude plugin validate ./bpe` exits 0; end-to-end implement+finalize round trip deferred to a reloaded session, same as F1
   - [x] Documented (session-management.md canonical)
-- [ ] Step F3: Extend `validator` to read implementation-notes.md as diff context
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:agent-development)
-  - [ ] Procedure step 3 substep added
-  - [ ] Verify: grep succeeds
-  - [ ] Documented (in agent body)
+- [x] Step F3: Extend `validator` to read implementation-notes.md as diff context
+  - [x] Scope defined (bpe/agents/validator.md only; repo working copy, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:agent-development)
+  - [x] Procedure step 3 substep added: read `.ai-sessions/implementation-notes.md` if present, treat `## Step N` sections as accepted deviation context rather than findings; format referenced to the "implementation-notes.md Format" section of session-management.md instead of restated
+  - [x] Verify: grep succeeds (validator implementation-notes.md 1); `claude plugin validate ./bpe` exits 0
+  - [x] Documented (in agent body)
 
 ## Component G: Plan archive lifecycle
 

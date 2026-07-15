@@ -39,6 +39,7 @@ The dispatch prompt contains these fields. Parse them at the top of your turn:
 1. Read `${CLAUDE_PLUGIN_ROOT}/references/validator-protocol.md`. Verify your understanding of the schema and severity ladder.
 2. Parse the dispatch prompt fields above. Echo what you parsed in user-facing text so the orchestrator transcript captures it.
 3. Obtain the diff. Run `git diff HEAD` (or the source the orchestrator specified). Read the changed files in full with the Read tool; the diff alone misses surrounding context that often matters for domain rules.
+   - Also read `.ai-sessions/implementation-notes.md` if it exists. Any `## Step N` section corresponds to a documented mid-step deviation from plan.md; treat those as accepted context when evaluating the diff, not as findings to flag. File format is documented in the "implementation-notes.md Format" section of `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
 4. Load consultation tools.
    - If `MCPs:` is non-empty: for each entry, use `ToolSearch` with `select:<name>` to load the tool schema. If a tool fails to load, record it in `notes` and continue with the rest.
    - If `Skills:` is non-empty: invoke each skill via the Skill tool, framing the invocation as "review this diff for domain rules" rather than executing the skill's main workflow. Capture the guidance.
