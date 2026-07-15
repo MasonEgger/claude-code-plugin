@@ -175,9 +175,9 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component L: Version bump to 0.6.0
 
-- [ ] Step L1: Bump `bpe/.claude-plugin/plugin.json` version to 0.6.0
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:plugin-structure)
-  - [ ] Version string changed
-  - [ ] Verify: grep shows 0.6.0; JSON parses
-  - [ ] Documented (no docs change)
+- [x] Step L1: Bump `bpe/.claude-plugin/plugin.json` version to 0.6.0
+  - [x] Scope defined
+  - [x] Tooling loaded (plugin-dev:plugin-structure)
+  - [x] Version string changed
+  - [x] Verify: grep shows 0.6.0; JSON parses
+  - [x] Documented (no docs change; landed early at Mason's direction on 2026-07-15 to ship the completed components, while F2-K remain open)
