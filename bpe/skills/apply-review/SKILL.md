@@ -54,7 +54,7 @@ Each entry is one **decision unit** — the review is intentionally fine-grained
 - The global comment, if non-empty.
 - The artifact path that will be modified.
 
-`ship` units don't need to appear in the summary — they're the silent majority by design and listing them adds noise.
+`ship` units don't need to appear in the summary — they're the silent majority by design and listing them adds noise. One exception: a `ship` entry with a non-empty comment. The review page locks the comment box while Ship it is selected, so this only appears in feedback saved by an older page — but when it does, list it under a **Ship, with comment** sub-heading rather than dropping the comment silently.
 
 ## Step 3: Confirm Before Mutating
 
@@ -62,7 +62,7 @@ Ask the user explicitly: "Apply these changes to `<artifact_path>`?" Do not proc
 
 How to interpret each decision (increasing severity):
 
-- **ship** ("Ship it") — leave the unit unchanged.
+- **ship** ("Ship it") — leave the unit unchanged. If the entry somehow carries a non-empty comment (older feedback files only; the current page prevents it), ask the user whether to treat it as an `update` directive or ignore it — never discard it without surfacing it.
 - **update** ("Close, but update") — the direction is right; apply the comment as a directive, rewriting the unit to incorporate the feedback while preserving its structure and surrounding context.
 - **redirect** ("Completely off, do this instead") — the approach is wrong. Discard the current content of the unit and replace it with what the comment describes. The comment is the new direction, not a tweak — treat it as a rewrite-from-intent, not an edit. If the comment is too thin to act on, ask the user before rewriting.
 - **reject** ("Absolutely reject and delete") — remove the unit entirely. This is destructive and explicit: the user wants it gone, not redone. Still confirm the specific deletions in Step 3 before cutting, and watch for ripple effects (references elsewhere in the artifact to the deleted unit).

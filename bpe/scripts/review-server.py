@@ -262,6 +262,15 @@ RUNTIME_HELPERS = """
         var id = sec.getAttribute('data-section-id');
         var checked = document.querySelector('[data-section-decision="' + id + '"]:checked');
         var link = document.querySelector('[data-toc-for="' + id + '"]');
+        var comment = document.querySelector('[data-section-comment="' + id + '"]');
+        if (comment) {
+          // A comment on "Ship it" is never read (apply-review leaves shipped
+          // units untouched), so lock and clear the box rather than collecting
+          // text that would silently vanish.
+          var shipped = checked !== null && checked.value === 'ship';
+          comment.disabled = shipped;
+          if (shipped) comment.value = '';
+        }
         if (checked) {
           sec.setAttribute('data-decision', checked.value);
           if (link) link.setAttribute('data-decision', checked.value);
