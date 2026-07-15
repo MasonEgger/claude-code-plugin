@@ -36,6 +36,10 @@ Populate every required section. Pull content from this conversation:
 - Efficiency insights, process improvements, observations
 - Suggested skills for next session (which skills the next `/bpe:execute-plan` should invoke at its hardened skill-loading step — see "Suggested Skills Populating Rule" in the reference)
 
+If `.ai-sessions/implementation-notes.md` exists and contains a `## Step <N>` section for the step this summary covers, extract its bullets and add a `## Deviations from Plan` section to the session summary with them.
+Then remove that `## Step N` section from `implementation-notes.md`: keep the file if other sections remain, else delete the file.
+The entry format (`- Plan said: <what>` / `- Deviated: <what actually happened>` / `- Impact: <consequence>` under a `## Step N` heading) is defined in the format reference ("implementation-notes.md Format" section).
+
 If the session has no clear single focus, use `mixed-work` as the slug.
 
 ## Step 3: Capture Lessons Learned

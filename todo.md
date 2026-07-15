@@ -85,12 +85,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Deviations-log step inserted into Mode: implement between Tree snapshot and Implement-Report emission, renumbered to whole numbers (new step 7; report emission became step 8; Bundled cross-reference updated to "steps 1-7"); entry format per plan (`## Step N` heading with `- Plan said:` / `- Deviated:` / `- Impact:` lines, skip when no deviation, create file if absent); `.ai-sessions/implementation-notes.md` appended to .gitignore
   - [x] Verify: greps succeed (step-executor implementation-notes.md 1, .gitignore implementation-notes.md 1); step position and renumbering confirmed by reading the section; `claude plugin validate ./bpe` exits 0 (live test dispatch that writes an entry deferred to a reloaded session, same as A1/B1/C1/C2/D1/E1/E2; updated agents don't take effect until plugin reload)
   - [x] Documented (in agent body)
-- [ ] Step F2: Extend mode=finalize to absorb deviations into session summary and clear
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:agent-development, plugin-dev:skill-development)
-  - [ ] session-summary Step 2 substep added; step-executor finalize note added; session-management.md format section added
-  - [ ] Verify: greps succeed; end-to-end absorbs deviations
-  - [ ] Documented (session-management.md canonical)
+- [x] Step F2: Extend mode=finalize to absorb deviations into session summary and clear
+  - [x] Scope defined
+  - [x] Tooling loaded (skills not reloaded; finished a half-applied F2 edit inline, conventions matched from F1 and existing sections)
+  - [x] session-summary Step 2 substep added; step-executor finalize note added; session-management.md format section added (plus a directory-structure bullet for the file)
+  - [x] Verify: greps succeed (session-summary "Deviations from Plan" 1, session-management implementation-notes 4, step-executor implementation-notes 2); `claude plugin validate ./bpe` exits 0; end-to-end implement+finalize round trip deferred to a reloaded session, same as F1
+  - [x] Documented (session-management.md canonical)
 - [ ] Step F3: Extend `validator` to read implementation-notes.md as diff context
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:agent-development)

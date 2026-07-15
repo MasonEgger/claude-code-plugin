@@ -13,6 +13,7 @@ All session artifacts live in `.ai-sessions/` at the project root:
 - `.ai-sessions/lessons.md` — accumulated cross-session learnings
 - `.ai-sessions/session-{YYYYMMDD}-{HHMM}-{slug}.md` — individual session summaries (e.g. `session-20260101-0900-plugin-setup.md`)
 - `.ai-sessions/handoffs/handoff-{YYYYMMDD}-{HHMM}-{slug}.md` — short-lived forward-looking documents written by `/bpe:handoff` (see "Handoff files" below)
+- `.ai-sessions/implementation-notes.md` — gitignored mid-step deviations log written by `bpe:step-executor` (see "implementation-notes.md Format" below)
 
 Create the directory with `mkdir -p .ai-sessions` (or `mkdir -p .ai-sessions/handoffs`) if it does not exist.
 
@@ -216,6 +217,14 @@ In both cases: default to keep on uncertainty; delete only on explicit confirmat
 ### Not auto-read
 
 Unlike session summaries, handoffs are **not** auto-read by `/bpe:execute-plan` at startup. The next agent should run `/bpe:handoff continue` to read an existing handoff, then `/bpe:handoff close` once the work has been picked up. If `/bpe:execute-plan` notices a leftover handoff file, it points the user at `/bpe:handoff continue` rather than consuming the file itself.
+
+## implementation-notes.md Format
+
+`.ai-sessions/implementation-notes.md` is the deviations log: a short-lived scratch file where `bpe:step-executor` Mode: implement records mid-step departures from plan.md, so that context survives to the finalize dispatch (which runs with a fresh context).
+
+- **Purpose**: mid-step deviation tracking. When implement work departs from plan.md's prescription (edge case, blocked path, better approach found mid-work), the deviation and its consequence are recorded when they happen instead of dying with the dispatch.
+- **Format**: one `## Step N` heading per affected step, followed by a bullet list: `- Plan said: <what>`, `- Deviated: <what actually happened>`, `- Impact: <consequence>`. Steps with no deviation get no section.
+- **Lifecycle**: created by Mode: implement (its deviations-log step) when the first deviation occurs. Absorbed during Mode: finalize: the session-summary procedure extracts the step's section into a `## Deviations from Plan` section of the session summary, then removes the absorbed section from implementation-notes.md, deleting the file when no sections remain. Gitignored; never staged.
 
 ## Starting Context Section (spec.md)
 
