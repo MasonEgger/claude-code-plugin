@@ -4,7 +4,7 @@ description: |
   Executes ONE BPE step as the worker for /bpe:goal autonomous mode. Operates in one of three modes set by the orchestrator: `implement` (execute the plan step's sub-steps, no commit), `fix` (apply validator findings, no commit), `finalize` (session summary, single commit, push). Backwards-compatible default with no mode argument runs the original bundled flow (implement + finalize in one dispatch).
 
   NEVER commit to main/master. NEVER use without a goal-driven parent. For interactive single-step work, use /bpe:execute-plan directly instead of dispatching this agent.
-model: inherit
+model: sonnet
 color: cyan
 tools: Read, Edit, Write, Bash, Grep, Glob, Skill
 ---

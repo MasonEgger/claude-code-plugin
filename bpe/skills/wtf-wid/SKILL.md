@@ -1,6 +1,7 @@
 ---
 name: wtf-wid
 description: WTF was I doing? — a tight, fits-on-screen recap of the current session so you can re-enter in under 10 seconds
+model: sonnet
 disable-model-invocation: true
 ---
 

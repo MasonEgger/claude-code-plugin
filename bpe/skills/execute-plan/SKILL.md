@@ -1,6 +1,7 @@
 ---
 name: execute-plan
 description: Implement the next unchecked step from plan.md by executing its sub-steps as written (RED-GREEN-REFACTOR for Feature steps; Scope/Tooling/Do/Verify/Document for Task steps)
+model: sonnet
 disable-model-invocation: true
 ---
 

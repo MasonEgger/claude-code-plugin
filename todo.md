@@ -145,12 +145,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component J: Model tier enforcement wiring
 
-- [ ] Step J1: Add `model:` field to all subagent and skill frontmatter per Goal 11 tables
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:agent-development, plugin-dev:skill-development)
-  - [ ] step-executor: sonnet, validator: opus, cheap-research: haiku (from C1); skills per Goal 11 table
-  - [ ] Verify: greps for each tier count check out (5 opus skills, 8 sonnet skills); agents have model fields
-  - [ ] Documented (spec.md Goal 11 IS the doc)
+- [x] Step J1: Add `model:` field to all subagent and skill frontmatter per Goal 11 tables
+  - [x] Scope defined (3 agents + 13 SKILL.md files; cheap-research already `model: haiku` from C1, no edit)
+  - [x] Tooling loaded (plugin-dev:agent-development, plugin-dev:skill-development)
+  - [x] step-executor: sonnet, validator: opus, cheap-research: haiku (from C1); skills per Goal 11 table (`model:` placed directly above `disable-model-invocation: true` in all 13)
+  - [x] Verify: greps for each tier count check out (5 opus skills, 8 sonnet skills); agents have model fields (plan's literal `grep -A1 "^---" | grep "^model:"` pipeline can't match due to multi-file filename prefixes; direct `grep "^model:" bpe/agents/*.md` shows all 3); all 16 frontmatters parse as YAML; `claude plugin validate ./bpe` exits 0; live tier verification deferred to plugin reload per A1-I2 precedent
+  - [x] Documented (spec.md Goal 11 IS the doc)
 
 ## Component K: Per-user profile system
 

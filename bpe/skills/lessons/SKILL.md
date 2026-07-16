@@ -2,6 +2,7 @@
 name: lessons
 description: View, search, and manage accumulated lessons from .ai-sessions/lessons.md
 argument-hint: "[search term | recent | all | categories | prune | promote]"
+model: sonnet
 disable-model-invocation: true
 ---
 
