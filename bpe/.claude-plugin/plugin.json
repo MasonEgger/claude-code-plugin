@@ -8,5 +8,6 @@
   },
   "repository": "https://github.com/MasonEgger/claude-code-plugin",
   "license": "MIT",
+  "hooks": "./hooks/profile-check.json",
   "keywords": ["workflow", "tdd", "session-management", "development"]
 }

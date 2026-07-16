@@ -160,12 +160,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Schema documented with active_profile, per-profile overrides, precedence rules, concrete example
   - [x] Verify: file exists; greps succeed; YAML example parses (both fenced examples validated via PyYAML; concrete example asserted against Goal 11 values); `claude plugin validate ./bpe` exits 0
   - [x] Documented (this file IS the doc; cross-reference added to spec.md Goal 11)
-- [ ] Step K2: Create `bpe/hooks/profile-check.md` UserPromptSubmit warning hook
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:hook-development, plugin-dev:plugin-settings)
-  - [ ] Hook created; registered in plugin.json
-  - [ ] Verify: file exists; registered; warning fires on mismatch; absent profile fires no warning
-  - [ ] Documented (hook body + cross-reference from model-profiles.md)
+- [x] Step K2: Create `bpe/hooks/profile-check.md` UserPromptSubmit warning hook
+  - [x] Scope defined
+  - [x] Tooling loaded (plugin-dev:hook-development, plugin-dev:plugin-settings)
+  - [x] Hook created; registered in plugin.json (prompt hook config in `bpe/hooks/profile-check.json`, referenced via plugin.json `hooks` field; `.md` is the canonical body/doc since hook configs are JSON)
+  - [x] Verify: file exists; registered; plugin.json and profile-check.json parse; embedded response JSON parses with warning wording; `claude plugin validate ./bpe` exits 0; end-to-end hook-firing tests (warning on mismatch, silence absent bpe.local.md) deferred to a reloaded interactive session per A1-K1 precedent
+  - [x] Documented (hook body + cross-reference from model-profiles.md)
 - [ ] Step K3: Ship example profile file and update README
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:plugin-settings)

@@ -1,7 +1,7 @@
 # Model Profiles
 
 This file is the canonical schema documentation for `.claude/bpe.local.md` profile files, the per-user settings layer that overrides skill and subagent `model:` frontmatter at runtime.
-Any BPE component that resolves a model for a skill invocation or a subagent dispatch (including the `profile-check` hook) conforms to the schema and precedence rules defined here.
+Any BPE component that resolves a model for a skill invocation or a subagent dispatch (including the `profile-check` UserPromptSubmit hook, documented in `bpe/hooks/profile-check.md`) conforms to the schema and precedence rules defined here.
 The design rationale lives in spec.md Goal 11.
 
 ## Purpose
