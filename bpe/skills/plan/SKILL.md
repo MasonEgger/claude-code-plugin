@@ -2,10 +2,28 @@
 name: plan
 description: Transform spec.md into an implementation roadmap (plan.md + todo.md) of TDD Feature steps and non-TDD Task steps
 disable-model-invocation: true
-argument-hint: "[--no-discover]"
+argument-hint: "[--archive | --regen] [--no-discover]"
 ---
 
 # Plan Command
+
+## Flag handling
+
+Run this check before anything else in this skill, including Tool discovery.
+
+1. Check for `plan.md` at the repo root.
+2. `plan.md` absent: proceed with the rest of this skill and generate a fresh plan. `--archive` and `--regen` are no-ops in this case.
+3. `plan.md` present and neither `--archive` nor `--regen` in $ARGUMENTS: refuse and stop. Report in this shape:
+
+   > plan.md exists (last modified <date>, N/M items checked). Use `--archive` to preserve it in .ai-sessions before regenerating, or `--regen` to discard and regenerate.
+
+   Fill `<date>` from the file's modification time (`date -r plan.md +%Y-%m-%d`). Fill `N/M` from todo.md's top-level checkbox counts: N is the checked count, M the total. If todo.md is missing, write "no todo.md" in place of "N/M items checked".
+4. `plan.md` present and `--archive` in $ARGUMENTS: run the Archive routine below, then proceed to generate a fresh plan.
+5. `plan.md` present and `--regen` in $ARGUMENTS: delete `plan.md` and `todo.md` at the repo root (`rm -f plan.md todo.md`), then proceed to generate a fresh plan.
+
+### Archive routine
+
+Placeholder: a follow-up step defines this routine (move plan.md and todo.md into `.ai-sessions/<slug>/` and write an accomplishment.md) and replaces this note. Until it lands, treat `--archive` as not yet implemented: say so, and stop without touching plan.md or todo.md.
 
 Draft a detailed, step-by-step blueprint for building this project. Then, once you have a solid plan, break it down into small, iterative chunks that build on each other. Look at these chunks and then go another round to break it into small steps. Review the results and make sure that the steps are small enough to be implemented safely with strong testing, but big enough to move the project forward. Iterate until you feel that the steps are right sized for this project.
 

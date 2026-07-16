@@ -100,12 +100,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component G: Plan archive lifecycle
 
-- [ ] Step G1: Add `--archive` and `--regen` flags to `/bpe:plan` with refuse-without-flag
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Flag handling section added; argument-hint updated
-  - [ ] Verify: greps succeed; refuse and regen tests pass
-  - [ ] Documented (in skill body + README)
+- [x] Step G1: Add `--archive` and `--regen` flags to `/bpe:plan` with refuse-without-flag
+  - [x] Scope defined (bpe/skills/plan/SKILL.md + README row; repo working copy, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Flag handling section added at top of procedure (absent → fresh; present + no flag → refuse with date and N/M; `--archive` → archive routine placeholder, filled by G2; `--regen` → delete + regenerate); argument-hint merged with C2's flag to `"[--archive | --regen] [--no-discover]"`
+  - [x] Verify: greps succeed (`--archive` 6, `--regen` 5); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0; interactive refuse/regen tests deferred to a reloaded session, same as A1-F2
+  - [x] Documented (in skill body + README /bpe:plan row)
 - [ ] Step G2: Implement archive routine and design accomplishment.md template
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:skill-development)
