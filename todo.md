@@ -112,12 +112,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Archive routine steps added to plan skill (slug propose + user confirm, mkdir, mv plan.md/todo.md, write accomplishment.md, then fresh plan); accomplishment.md template + archive layout section added to session-management.md with a Directory Structure bullet
   - [x] Verify: greps succeed (Archive routine 2, accomplishment.md 7); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0; end-to-end `--archive` run with stub files deferred to a reloaded session, same as A1-G1
   - [x] Documented (session-management.md canonical)
-- [ ] Step G3: Wire archive prompt into `/bpe:session-summary` at end of `/goal` loop
-  - [ ] Scope defined
-  - [ ] Tooling loaded
-  - [ ] Archive prompt section added to session-summary skill
-  - [ ] Verify: end-to-end goal loop fires archive prompt
-  - [ ] Documented (in skill body)
+- [x] Step G3: Wire archive prompt into `/bpe:session-summary` at end of `/goal` loop
+  - [x] Scope defined (bpe/skills/session-summary/SKILL.md; repo working copy, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Archive prompt section added as new Step 5 (Confirm renumbered to Step 6, same precedent as F1); guards: skip inside step-executor mode=finalize dispatches, prompt only after the goal loop ends with todo.md present and non-zero checked items; yes-path follows the plan skill's Archive routine inline (slug confirmation included) but stops before fresh-plan generation; no-path notes /bpe:plan will refuse until archived
+  - [x] Verify: `grep -i "archive prompt"` hits 3 (heading is Title Case per house style, so the plan's exact-case grep needs -i); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0; end-to-end goal-loop-to-archive-prompt run deferred to a reloaded session, same as A1-G2
+  - [x] Documented (in skill body; Step 6 Confirm now reports the archive outcome)
 
 ## Component H: Autonomous mode for non-code
 
