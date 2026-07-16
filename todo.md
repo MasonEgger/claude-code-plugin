@@ -136,12 +136,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Procedure step 4 extended (Linters read from Tools block, legacy/none handling); new step 5 runs linters via Bash and parses output into schema findings with severity mapping and linter check ID as `rule`; linter-fails-to-run recorded in `notes`, not a hard failure; downstream steps renumbered 6-9
   - [x] Verify: greps succeed (`Linters` 3 hits, `linter check ID` 1 hit); frontmatter parses as YAML and tools already include Bash; `claude plugin validate ./bpe` exits 0 (end-to-end vale-on-a-prose-diff dispatch deferred to a reloaded session, same as A1/B1/C1/F1; updated agents don't take effect until plugin reload)
   - [x] Documented (in agent body)
-- [ ] Step I2: Update validator-protocol.md and validate-findings.py for linter findings note
-  - [ ] Scope defined
-  - [ ] Tooling loaded (python:python)
-  - [ ] Linter-sourced findings section added to protocol; validate-findings.py verified against sample linter JSON
-  - [ ] Verify: grep succeeds; script accepts linter finding
-  - [ ] Documented (validator-protocol.md canonical)
+- [x] Step I2: Update validator-protocol.md and validate-findings.py for linter findings note
+  - [x] Scope defined (bpe/references/validator-protocol.md only; validate-findings.py evaluated, unchanged)
+  - [x] Tooling loaded (python:python)
+  - [x] Linter-sourced findings section added to protocol (same schema for all sources, `rule` carries linter check ID, severity mapping matches validator.md step 5, cross-ref to Tools block, failed-to-run linters land in `notes`); validate-findings.py verified against sample linter JSON
+  - [x] Verify: grep hits (`Linter-sourced findings` at line 101); script accepts linter-shaped finding (verdict warn, rule vale.OverusedPhrases) with exit 0, so validate-findings.py needed no changes (schema is source-agnostic: linter fields are covered by the existing required + optional finding keys); `claude plugin validate ./bpe` exits 0
+  - [x] Documented (validator-protocol.md canonical)
 
 ## Component J: Model tier enforcement wiring
 

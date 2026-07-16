@@ -98,6 +98,15 @@ Each finding object:
 }
 ```
 
+## Linter-sourced findings
+
+Findings the validator produces by running a declared linter use the same JSON schema as skill- and MCP-sourced findings; there is no linter-specific shape, and all sources land in the same findings block.
+The `rule` field carries the linter check ID (e.g., `vale.OverusedPhrases`, `ansible-lint.no-changed-when`).
+Severity maps from the linter's own levels: `block` for errors, `warn` for warnings, `info` for suggestions; a linter that emits errors only maps every hit to `block`.
+The parsing and mapping procedure lives in `agents/validator.md` step 5 (Run declared linters).
+Linters are declared per section or per step in plan.md; see the "Tools block" section below for the declaration format.
+A linter that fails to run (not installed, config missing) is recorded in the block's `notes`, not emitted as a finding.
+
 ## Auto-discovery fallback
 
 The orchestrator always passes explicit MCP and skill lists. If the validator is dispatched without lists (ad-hoc human use), it falls back to:
