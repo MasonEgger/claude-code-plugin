@@ -130,12 +130,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component I: Validator linter integration
 
-- [ ] Step I1: Extend `bpe/agents/validator.md` to run Linters from Tools block
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:agent-development)
-  - [ ] Procedure step 4 extended; new subprocess+parse step added; failure handling noted
-  - [ ] Verify: greps succeed; vale findings appear in test dispatch
-  - [ ] Documented (in agent body)
+- [x] Step I1: Extend `bpe/agents/validator.md` to run Linters from Tools block
+  - [x] Scope defined (bpe/agents/validator.md only)
+  - [x] Tooling loaded (plugin-dev:agent-development)
+  - [x] Procedure step 4 extended (Linters read from Tools block, legacy/none handling); new step 5 runs linters via Bash and parses output into schema findings with severity mapping and linter check ID as `rule`; linter-fails-to-run recorded in `notes`, not a hard failure; downstream steps renumbered 6-9
+  - [x] Verify: greps succeed (`Linters` 3 hits, `linter check ID` 1 hit); frontmatter parses as YAML and tools already include Bash; `claude plugin validate ./bpe` exits 0 (end-to-end vale-on-a-prose-diff dispatch deferred to a reloaded session, same as A1/B1/C1/F1; updated agents don't take effect until plugin reload)
+  - [x] Documented (in agent body)
 - [ ] Step I2: Update validator-protocol.md and validate-findings.py for linter findings note
   - [ ] Scope defined
   - [ ] Tooling loaded (python:python)
