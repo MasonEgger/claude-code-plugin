@@ -166,12 +166,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Hook created; registered in plugin.json (prompt hook config in `bpe/hooks/profile-check.json`, referenced via plugin.json `hooks` field; `.md` is the canonical body/doc since hook configs are JSON)
   - [x] Verify: file exists; registered; plugin.json and profile-check.json parse; embedded response JSON parses with warning wording; `claude plugin validate ./bpe` exits 0; end-to-end hook-firing tests (warning on mismatch, silence absent bpe.local.md) deferred to a reloaded interactive session per A1-K1 precedent
   - [x] Documented (hook body + cross-reference from model-profiles.md)
-- [ ] Step K3: Ship example profile file and update README
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:plugin-settings)
-  - [ ] .claude/bpe.local.md.example created; README section added
-  - [ ] Verify: files exist; example YAML parses; README section present
-  - [ ] Documented (README IS user-facing)
+- [x] Step K3: Ship example profile file and update README
+  - [x] Scope defined
+  - [x] Tooling loaded (plugin-dev:plugin-settings)
+  - [x] .claude/bpe.local.md.example created; README section added
+  - [x] Verify: files exist; example frontmatter parses via PyYAML and matches spec.md Goal 11's sample; README section present; `claude plugin validate ./bpe` exits 0; added `.claude/*.local.md` to .gitignore per model-profiles.md so the real settings file can't be committed (the `.example` file stays committable, confirmed via `git check-ignore`)
+  - [x] Documented (README IS user-facing)
 
 ## Component L: Version bump to 0.6.0
 

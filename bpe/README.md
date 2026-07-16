@@ -94,6 +94,26 @@ Three hard contracts the orchestrator enforces:
 
 Put your session into auto mode before pasting so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).
 
+## Per-user model profiles
+
+Skills and agents ship with fixed `model:` tiers in their frontmatter.
+A `.claude/bpe.local.md` settings file overrides those defaults per skill and per agent, grouped into named profiles you switch per machine, per project, or per shell.
+The canonical schema and lookup precedence live in [references/model-profiles.md](references/model-profiles.md).
+
+Quick start:
+
+1. Copy [`.claude/bpe.local.md.example`](../.claude/bpe.local.md.example) from this repo's root to `~/.claude/bpe.local.md` (user-global) or to `.claude/bpe.local.md` in a project (per-project; shadows the user-global file key by key).
+2. Set `active_profile` to the profile you want live.
+3. Add per-skill or per-agent overrides under that profile. Values are family aliases (`opus`, `sonnet`, `haiku`) or pinned model IDs (`claude-opus-4-7`). Anything you leave out falls back to the frontmatter default, so list only what differs.
+
+The `BPE_PROFILE` environment variable switches profiles per shell: `BPE_PROFILE=work claude` selects the `work` profile for that session regardless of what the files say.
+
+When you invoke a `/bpe:` skill, the `profile-check` hook ([hooks/profile-check.md](hooks/profile-check.md)) compares the profile-resolved model against the current session model and warns on mismatch, suggesting `/model <X>` before proceeding.
+It never blocks; the skill runs either way.
+
+The real settings file is user-local state and must not be committed.
+Keep `.claude/*.local.md` in your `.gitignore` (this repo's covers it).
+
 ## Installation
 
 Install via the marketplace registered in this repo:
