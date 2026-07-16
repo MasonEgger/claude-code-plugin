@@ -121,12 +121,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component H: Autonomous mode for non-code
 
-- [ ] Step H1: Extend `/bpe:goal` pre-flight with verification_command cascade
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Pre-Flight cascade added; brainstorm+retrofit prompt for verification_command when needed; session-management.md format doc added
-  - [ ] Verify: greps succeed; end-to-end runs vale on a prose project
-  - [ ] Documented (session-management.md canonical)
+- [x] Step H1: Extend `/bpe:goal` pre-flight with verification_command cascade
+  - [x] Scope defined (bpe/skills/goal/SKILL.md, bpe/skills/brainstorm/SKILL.md, bpe/skills/retrofit/SKILL.md, bpe/references/session-management.md; repo working copy, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Pre-Flight cascade added (manifest autodetect → spec.md `**Verification command:**` field → ask user); goal Step 2 wording now covers non-test commands like `vale docs/` (drop the "with no failing tests" clause; exit 0 is the whole signal) and the refusal bullet names the full cascade; brainstorm Tool discovery gained step 5 prompting for the command when no manifest matches (field goes between **Skills:** and **Notes:**); retrofit step 4 tooling bullet asks the same; session-management.md gained "Available Tooling Section (spec.md)" documenting the section format including the field, intro line updated per G2 precedent
+  - [x] Verify: `grep "Verification command"` hits in goal SKILL (2 lines) and session-management.md (2 lines), plus brainstorm and retrofit; all three touched SKILL.md frontmatters parse as YAML; `claude plugin validate ./bpe` exits 0; end-to-end vale-on-a-prose-repo run deferred to a reloaded session, same as A1-G3
+  - [x] Documented (session-management.md canonical)
 
 ## Component I: Validator linter integration
 

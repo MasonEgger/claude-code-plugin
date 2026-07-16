@@ -1,6 +1,6 @@
 # Session Management
 
-This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` section (see "Starting Context Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write, and the plan-archive layout that `/bpe:plan --archive` writes (see "Plan Archives (accomplishment.md)" below).
+This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` and `## Available tooling` sections (see "Starting Context Section (spec.md)" and "Available Tooling Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write, and the plan-archive layout that `/bpe:plan --archive` writes (see "Plan Archives (accomplishment.md)" below).
 
 ## Purpose
 
@@ -294,3 +294,13 @@ This section is the canonical definition of that record; both skills conform to 
 - **Format**: an H2 heading, `## Starting context`, followed by the user's context answer verbatim. Do not paraphrase, summarize, or clean up the user's words.
 - **Placement**: between `# <title>` and `## Project overview` in spec.md.
 - **Purpose**: calibrates the plan writer and the validator. `/bpe:plan` reads it to pitch step granularity to what the user already knows; the `bpe:validator` agent reads it to weight findings against the user's stated familiarity.
+
+## Available Tooling Section (spec.md)
+
+The tool discovery pass in `/bpe:brainstorm` (Tool discovery section) and `/bpe:retrofit` (procedure step 4) records the user's confirmed validator tooling in spec.md.
+This section is the canonical definition of that record; both skills conform to it.
+
+- **Format**: an H2 heading, `## Available tooling`, followed by one intro sentence, then labeled fields in this order: `**MCPs:**` (bullet list), `**Skills:**` (bullet list), `**Verification command:**` (optional single line, see below), `**Notes:**` (free-form validator guidance). Empty MCP and skill lists are valid; the section still exists so plan.md has a known structure to read.
+- **Placement**: after `## Project overview`, before the detailed requirements in spec.md.
+- **Purpose**: `/bpe:plan` propagates the MCP and skill lists to per-section `**Validator consults:**` declarations in plan.md; `/bpe:goal` passes them to the `bpe:validator` agent when dispatching it.
+- **Verification command field**: a single line, `**Verification command:** <command>`, e.g. `**Verification command:** vale docs/`. Written only when the project's tech stack matches none of the test-runner manifests `/bpe:goal` autodetects (pyproject.toml, package.json, Cargo.toml, go.mod). `/bpe:goal`'s pre-flight resolves its verification command through a cascade: manifest autodetect, then this field, then asking the user. Exit 0 of the resolved command is the goal condition's success signal, so the command must succeed only when the work is verifiably done.

@@ -1,6 +1,6 @@
 ---
 name: goal
-description: Autonomous-mode BPE run via /goal. Modes — full (default) | section <name> | step. Pre-flights branch safety (refuses on main), detects the project test runner, builds a verifiable completion condition, and writes the assembled /goal block (condition + validator-aware orchestrator playbook + per-commit verification) to goal.md at the repo root for you to paste. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
+description: Autonomous-mode BPE run via /goal. Modes — full (default) | section <name> | step. Pre-flights branch safety (refuses on main), resolves the project verification command (test-runner autodetect, spec.md fallback, or ask), builds a verifiable completion condition, and writes the assembled /goal block (condition + validator-aware orchestrator playbook + per-commit verification) to goal.md at the repo root for you to paste. Requires Claude Code v2.1.139+; put your session in auto mode before pasting for unattended execution.
 argument-hint: [full | section <name> | step]
 disable-model-invocation: true
 ---
@@ -36,13 +36,17 @@ grep -q '^goal\.md$' .gitignore && echo "gitignore goal.md: ok" || echo "gitigno
 grep -c '^\*\*Validator consults:\*\*' plan.md 2>/dev/null || echo 0
 ```
 
-Then detect the test runner:
+Then resolve the verification command through a three-stage cascade:
 
-- `pyproject.toml` present → `pytest -q`
-- `package.json` present → `npm test --silent`
-- `Cargo.toml` present → `cargo test --quiet`
-- `go.mod` present → `go test ./...`
-- Otherwise → ask the user for the exact test command and use what they provide.
+1. Autodetect the test runner by manifest file:
+   - `pyproject.toml` present → `pytest -q`
+   - `package.json` present → `npm test --silent`
+   - `Cargo.toml` present → `cargo test --quiet`
+   - `go.mod` present → `go test ./...`
+2. No manifest match → read spec.md's `## Available tooling` section for a `**Verification command:**` field (format documented in `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`). If present, use its value verbatim.
+3. Still nothing → ask the user for the exact verification command and use what they provide.
+
+The resolved command need not be a test runner; for a prose or config project it can be any exit-0-on-success check (e.g. `vale docs/`). Whatever resolves substitutes for `<test-cmd>` in steps 2-3, and its exit 0 is the goal condition's success signal.
 
 **Refuse and stop if any of these are true:**
 
@@ -51,7 +55,7 @@ Then detect the test runner:
 - Zero unchecked items in `todo.md`.
 - `commit-msg.md` is not gitignored. Tell the user to add it and re-run.
 - `goal.md` is not gitignored. Tell the user to add it and re-run; this command writes the `/goal` block there as a working artifact.
-- Test runner can't be detected AND the user didn't supply one.
+- The verification-command cascade resolves nothing: no manifest match, no `**Verification command:**` field in spec.md, and the user didn't supply one.
 
 The "Validator consults:" count from pre-flight is informational, not a refusal trigger. Zero is fine; the orchestrator treats every section as `none` and skips the validator loop.
 
@@ -59,7 +63,7 @@ Do NOT auto-create branches, auto-edit `.gitignore`, or auto-anything in pre-fli
 
 ## Step 2: Build the Goal Condition
 
-Mode determines the condition. Substitute `<test-cmd>` with the detected runner, `<branch>` with the current branch.
+Mode determines the condition. Substitute `<test-cmd>` with the verification command resolved in Step 1, `<branch>` with the current branch. When the resolved command is not a test runner (e.g. `vale docs/`), drop the "with no failing tests" clause from the condition; exit 0 of the command is the whole success signal.
 
 **step:**
 ```

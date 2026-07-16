@@ -44,6 +44,7 @@ The resulting spec.md matches the format `/bpe:brainstorm` produces, so `/bpe:pl
      Enumerate candidate MCPs with `ToolSearch` using a domain-suited query, pick candidate skills from the session reminder list, then ask ONE question presenting the candidates for the user to confirm, drop, or extend.
      If the user wants suggestions for external tools not in the session, dispatch the `bpe:cheap-research` subagent via the Agent tool with a single research question naming the project domain; the agent returns a ranked list of at most 10 entries (`<name> :: <one-line relevance note> :: <source URL or path>`) or the line `no relevant results` followed by one sentence naming what was searched.
      Only confirmed entries go into spec.md.
+     If the repo matches none of the test-runner manifests read in step 2 (package.json, pyproject.toml, go.mod, Cargo.toml), also ask for the exact verification command (e.g. `vale docs/` for a prose project) and record it as a `**Verification command:** <command>` line in the `## Available tooling` section, between `**Skills:**` and `**Notes:**`; `/bpe:goal`'s pre-flight falls back to this field when it can't autodetect a test runner.
    - Out of scope: what the project deliberately does not do.
 
 5. **Write spec.md at the repo root.**
