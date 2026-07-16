@@ -291,6 +291,7 @@ profiles:
 ```
 
 The `active_profile` field selects which profile is live. `BPE_PROFILE=work` env var overrides the file for shell-scoped switching. Overrides accept any value the SKILL.md `model:` field accepts (aliases or explicit model IDs). Unset skills or subagents fall back to their frontmatter `model:` field.
+The canonical schema documentation, including the full lookup precedence chain, is `bpe/references/model-profiles.md`.
 
 Advantages:
 - Fable comes and goes (subscription, work rules, model retirement). User updates one file, every skill and subagent adapts.

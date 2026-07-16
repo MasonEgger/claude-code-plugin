@@ -154,12 +154,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
 
 ## Component K: Per-user profile system
 
-- [ ] Step K1: Design profile schema and create `bpe/references/model-profiles.md`
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:plugin-settings)
-  - [ ] Schema documented with active_profile, per-profile overrides, precedence rules, concrete example
-  - [ ] Verify: file exists; greps succeed; YAML example parses
-  - [ ] Documented (this file IS the doc)
+- [x] Step K1: Design profile schema and create `bpe/references/model-profiles.md`
+  - [x] Scope defined
+  - [x] Tooling loaded (plugin-dev:plugin-settings)
+  - [x] Schema documented with active_profile, per-profile overrides, precedence rules, concrete example
+  - [x] Verify: file exists; greps succeed; YAML example parses (both fenced examples validated via PyYAML; concrete example asserted against Goal 11 values); `claude plugin validate ./bpe` exits 0
+  - [x] Documented (this file IS the doc; cross-reference added to spec.md Goal 11)
 - [ ] Step K2: Create `bpe/hooks/profile-check.md` UserPromptSubmit warning hook
   - [ ] Scope defined
   - [ ] Tooling loaded (plugin-dev:hook-development, plugin-dev:plugin-settings)
