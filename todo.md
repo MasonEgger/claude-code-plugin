@@ -106,12 +106,12 @@ Mirror of plan.md. Check off sub-steps as they land. Each top-level `[ ]` is a s
   - [x] Flag handling section added at top of procedure (absent → fresh; present + no flag → refuse with date and N/M; `--archive` → archive routine placeholder, filled by G2; `--regen` → delete + regenerate); argument-hint merged with C2's flag to `"[--archive | --regen] [--no-discover]"`
   - [x] Verify: greps succeed (`--archive` 6, `--regen` 5); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0; interactive refuse/regen tests deferred to a reloaded session, same as A1-F2
   - [x] Documented (in skill body + README /bpe:plan row)
-- [ ] Step G2: Implement archive routine and design accomplishment.md template
-  - [ ] Scope defined
-  - [ ] Tooling loaded (plugin-dev:skill-development)
-  - [ ] Archive routine steps added to plan skill; accomplishment.md template added to session-management.md
-  - [ ] Verify: greps succeed; end-to-end archives to .ai-sessions/<slug>/
-  - [ ] Documented (session-management.md canonical)
+- [x] Step G2: Implement archive routine and design accomplishment.md template
+  - [x] Scope defined (bpe/skills/plan/SKILL.md + bpe/references/session-management.md; repo working copy, installed cache untouched)
+  - [x] Tooling loaded (plugin-dev:skill-development)
+  - [x] Archive routine steps added to plan skill (slug propose + user confirm, mkdir, mv plan.md/todo.md, write accomplishment.md, then fresh plan); accomplishment.md template + archive layout section added to session-management.md with a Directory Structure bullet
+  - [x] Verify: greps succeed (Archive routine 2, accomplishment.md 7); frontmatter parses as YAML; `claude plugin validate ./bpe` exits 0; end-to-end `--archive` run with stub files deferred to a reloaded session, same as A1-G1
+  - [x] Documented (session-management.md canonical)
 - [ ] Step G3: Wire archive prompt into `/bpe:session-summary` at end of `/goal` loop
   - [ ] Scope defined
   - [ ] Tooling loaded

@@ -23,7 +23,15 @@ Run this check before anything else in this skill, including Tool discovery.
 
 ### Archive routine
 
-Placeholder: a follow-up step defines this routine (move plan.md and todo.md into `.ai-sessions/<slug>/` and write an accomplishment.md) and replaces this note. Until it lands, treat `--archive` as not yet implemented: say so, and stop without touching plan.md or todo.md.
+Referenced by the `--archive` flag above and by `/bpe:session-summary`'s end-of-goal archive prompt.
+The archive layout and the accomplishment.md format are canonically documented in `${CLAUDE_PLUGIN_ROOT}/references/session-management.md` under "Plan Archives (accomplishment.md)"; read that section before step 5 below.
+
+1. Propose a slug for the archive directory based on plan.md's stated goals and the checked items in todo.md. Same 2-3 word kebab-case shape as session-summary slugs (e.g. `add-user-auth`); use `init` or `v1` when the plan has no sharper focus, such as a project's first archive. Ask the user to confirm or edit the slug. Do not touch any files until the user answers.
+2. `mkdir -p .ai-sessions/<slug>/`
+3. `mv plan.md .ai-sessions/<slug>/plan.md`
+4. `mv todo.md .ai-sessions/<slug>/todo.md`
+5. Write `.ai-sessions/<slug>/accomplishment.md` following the accomplishment.md template in session-management.md. Populate it from the just-moved plan.md and todo.md plus `git log` commit subjects; the template section documents each field.
+6. Proceed to generate a fresh plan (the rest of this skill).
 
 Draft a detailed, step-by-step blueprint for building this project. Then, once you have a solid plan, break it down into small, iterative chunks that build on each other. Look at these chunks and then go another round to break it into small steps. Review the results and make sure that the steps are small enough to be implemented safely with strong testing, but big enough to move the project forward. Iterate until you feel that the steps are right sized for this project.
 

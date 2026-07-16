@@ -1,6 +1,6 @@
 # Session Management
 
-This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` section (see "Starting Context Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write.
+This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` section (see "Starting Context Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write, and the plan-archive layout that `/bpe:plan --archive` writes (see "Plan Archives (accomplishment.md)" below).
 
 ## Purpose
 
@@ -14,6 +14,7 @@ All session artifacts live in `.ai-sessions/` at the project root:
 - `.ai-sessions/session-{YYYYMMDD}-{HHMM}-{slug}.md` — individual session summaries (e.g. `session-20260101-0900-plugin-setup.md`)
 - `.ai-sessions/handoffs/handoff-{YYYYMMDD}-{HHMM}-{slug}.md` — short-lived forward-looking documents written by `/bpe:handoff` (see "Handoff files" below)
 - `.ai-sessions/implementation-notes.md` — gitignored mid-step deviations log written by `bpe:step-executor` (see "implementation-notes.md Format" below)
+- `.ai-sessions/{slug}/` — one archived plan per directory, written by `/bpe:plan --archive`; holds the retired `plan.md`, `todo.md`, and an `accomplishment.md` (see "Plan Archives (accomplishment.md)" below)
 
 Create the directory with `mkdir -p .ai-sessions` (or `mkdir -p .ai-sessions/handoffs`) if it does not exist.
 
@@ -225,6 +226,65 @@ Unlike session summaries, handoffs are **not** auto-read by `/bpe:execute-plan` 
 - **Purpose**: mid-step deviation tracking. When implement work departs from plan.md's prescription (edge case, blocked path, better approach found mid-work), the deviation and its consequence are recorded when they happen instead of dying with the dispatch.
 - **Format**: one `## Step N` heading per affected step, followed by a bullet list: `- Plan said: <what>`, `- Deviated: <what actually happened>`, `- Impact: <consequence>`. Steps with no deviation get no section.
 - **Lifecycle**: created by Mode: implement (its deviations-log step) when the first deviation occurs. Absorbed during Mode: finalize: the session-summary procedure extracts the step's section into a `## Deviations from Plan` section of the session summary, then removes the absorbed section from implementation-notes.md, deleting the file when no sections remain. Gitignored; never staged.
+
+## Plan Archives (accomplishment.md)
+
+`/bpe:plan --archive` retires a finished or superseded plan into `.ai-sessions/<slug>/` before generating a fresh one.
+This section is the canonical definition of the archive layout and the accomplishment.md format; the plan skill's Archive routine conforms to it.
+
+### Archive Layout
+
+```
+.ai-sessions/
+  <slug>/                 e.g. init, v1, add-user-auth
+    plan.md
+    todo.md
+    accomplishment.md
+```
+
+- **Slug**: 2-3 word kebab-case, proposed from plan.md's stated goals and the checked todo items (`init` or `v1` for a project's first archive). The user confirms or edits the slug before any file moves.
+- **plan.md / todo.md**: the retired files, moved verbatim from the repo root. Do not edit them during the move.
+- **accomplishment.md**: written fresh at archive time per the template below. It is the durable record of what the plan achieved; the moved files are the raw material.
+
+### accomplishment.md Template
+
+```markdown
+# Accomplishment: {Descriptive Title}
+
+**Archived**: {YYYY-MM-DD}
+**Convergence**: {converged | partial: N of M items checked | failed: <one-line reason>}
+
+## Spec Slice
+
+{The spec.md slice this plan implemented: copied when short, summarized when long}
+
+## What Got Done
+
+- {Checked todo item or commit subject}
+- ...
+
+## Deferred or Dropped
+
+- {Unchecked item or mid-flight cut, with a one-line reason}
+- ...
+
+## Notable Decisions
+
+- {Mid-execution decision worth remembering, e.g. from session summaries' Deviations from Plan sections}
+- ...
+
+## Files Touched
+
+- {path}
+- ...
+
+## Lessons Cross-Reference
+
+- {Pointer to lessons.md entries captured during this plan, quoted or dated, or "none captured"}
+```
+
+Populate "What Got Done" from todo.md's checked top-level items and the plan's commit subjects (`git log --oneline` over the plan's branch).
+Use "Deferred or Dropped" and "Notable Decisions" sparingly; an empty section may be omitted, matching the lessons.md rule for empty categories.
 
 ## Starting Context Section (spec.md)
 
