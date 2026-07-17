@@ -18,7 +18,7 @@
 |---|---|---|
 | Brief on the tailnet, comments only | Comment-only review page via review-server.py | Two comments, discussed |
 | Post the comment and narrow scope | Issue #7 comment + retitle | Scope narrowed to the content layer |
-| Archive the plan, validate #7 through indie | Archive routine inline; then /indie:validate | This commit; validation follows |
+| Archive the plan | Archive routine inline | This commit |
 
 ## Efficiency Insights
 
@@ -41,4 +41,4 @@
 
 ## Suggested Skills for Next Session
 
-- `indie:idea` and `indie:venture-routing` — the #7 validation runs through the indie rubric and writes to the ventures/ vault.
+- `plugin-dev:skill-development` — the likely next stage (issue #7's content layer) starts with skill authoring against the narrowed scope.
