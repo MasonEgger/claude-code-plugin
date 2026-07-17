@@ -1,6 +1,6 @@
 # Session Management
 
-This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`.
+This file is the single source of truth for the format and workflow of session artifacts in `.ai-sessions/`. The `/bpe:session-summary`, `/bpe:execute-plan`, and `/bpe:handoff` commands all read it directly via `${CLAUDE_PLUGIN_ROOT}/references/session-management.md`. It also canonically documents spec.md's `## Starting context` and `## Available tooling` sections (see "Starting Context Section (spec.md)" and "Available Tooling Section (spec.md)" below), which `/bpe:brainstorm` and `/bpe:retrofit` write, and the plan-archive layout that `/bpe:plan --archive` writes (see "Plan Archives (accomplishment.md)" below).
 
 ## Purpose
 
@@ -13,6 +13,8 @@ All session artifacts live in `.ai-sessions/` at the project root:
 - `.ai-sessions/lessons.md` — accumulated cross-session learnings
 - `.ai-sessions/session-{YYYYMMDD}-{HHMM}-{slug}.md` — individual session summaries (e.g. `session-20260101-0900-plugin-setup.md`)
 - `.ai-sessions/handoffs/handoff-{YYYYMMDD}-{HHMM}-{slug}.md` — short-lived forward-looking documents written by `/bpe:handoff` (see "Handoff files" below)
+- `.ai-sessions/implementation-notes.md` — gitignored mid-step deviations log written by `bpe:step-executor` (see "implementation-notes.md Format" below)
+- `.ai-sessions/{slug}/` — one archived plan per directory, written by `/bpe:plan --archive`; holds the retired `plan.md`, `todo.md`, and an `accomplishment.md` (see "Plan Archives (accomplishment.md)" below)
 
 Create the directory with `mkdir -p .ai-sessions` (or `mkdir -p .ai-sessions/handoffs`) if it does not exist.
 
@@ -216,3 +218,89 @@ In both cases: default to keep on uncertainty; delete only on explicit confirmat
 ### Not auto-read
 
 Unlike session summaries, handoffs are **not** auto-read by `/bpe:execute-plan` at startup. The next agent should run `/bpe:handoff continue` to read an existing handoff, then `/bpe:handoff close` once the work has been picked up. If `/bpe:execute-plan` notices a leftover handoff file, it points the user at `/bpe:handoff continue` rather than consuming the file itself.
+
+## implementation-notes.md Format
+
+`.ai-sessions/implementation-notes.md` is the deviations log: a short-lived scratch file where `bpe:step-executor` Mode: implement records mid-step departures from plan.md, so that context survives to the finalize dispatch (which runs with a fresh context).
+
+- **Purpose**: mid-step deviation tracking. When implement work departs from plan.md's prescription (edge case, blocked path, better approach found mid-work), the deviation and its consequence are recorded when they happen instead of dying with the dispatch.
+- **Format**: one `## Step N` heading per affected step, followed by a bullet list: `- Plan said: <what>`, `- Deviated: <what actually happened>`, `- Impact: <consequence>`. Steps with no deviation get no section.
+- **Lifecycle**: created by Mode: implement (its deviations-log step) when the first deviation occurs. Absorbed during Mode: finalize: the session-summary procedure extracts the step's section into a `## Deviations from Plan` section of the session summary, then removes the absorbed section from implementation-notes.md, deleting the file when no sections remain. Gitignored; never staged.
+
+## Plan Archives (accomplishment.md)
+
+`/bpe:plan --archive` retires a finished or superseded plan into `.ai-sessions/<slug>/` before generating a fresh one.
+This section is the canonical definition of the archive layout and the accomplishment.md format; the plan skill's Archive routine conforms to it.
+
+### Archive Layout
+
+```
+.ai-sessions/
+  <slug>/                 e.g. init, v1, add-user-auth
+    plan.md
+    todo.md
+    accomplishment.md
+```
+
+- **Slug**: 2-3 word kebab-case, proposed from plan.md's stated goals and the checked todo items (`init` or `v1` for a project's first archive). The user confirms or edits the slug before any file moves.
+- **plan.md / todo.md**: the retired files, moved verbatim from the repo root. Do not edit them during the move.
+- **accomplishment.md**: written fresh at archive time per the template below. It is the durable record of what the plan achieved; the moved files are the raw material.
+
+### accomplishment.md Template
+
+```markdown
+# Accomplishment: {Descriptive Title}
+
+**Archived**: {YYYY-MM-DD}
+**Convergence**: {converged | partial: N of M items checked | failed: <one-line reason>}
+
+## Spec Slice
+
+{The spec.md slice this plan implemented: copied when short, summarized when long}
+
+## What Got Done
+
+- {Checked todo item or commit subject}
+- ...
+
+## Deferred or Dropped
+
+- {Unchecked item or mid-flight cut, with a one-line reason}
+- ...
+
+## Notable Decisions
+
+- {Mid-execution decision worth remembering, e.g. from session summaries' Deviations from Plan sections}
+- ...
+
+## Files Touched
+
+- {path}
+- ...
+
+## Lessons Cross-Reference
+
+- {Pointer to lessons.md entries captured during this plan, quoted or dated, or "none captured"}
+```
+
+Populate "What Got Done" from todo.md's checked top-level items and the plan's commit subjects (`git log --oneline` over the plan's branch).
+Use "Deferred or Dropped" and "Notable Decisions" sparingly; an empty section may be omitted, matching the lessons.md rule for empty categories.
+
+## Starting Context Section (spec.md)
+
+The blindspot pass in `/bpe:brainstorm` (Step 0) and `/bpe:retrofit` (procedure step 3) records the user's starting-context answer in spec.md.
+This section is the canonical definition of that record; both skills conform to it.
+
+- **Format**: an H2 heading, `## Starting context`, followed by the user's context answer verbatim. Do not paraphrase, summarize, or clean up the user's words.
+- **Placement**: between `# <title>` and `## Project overview` in spec.md.
+- **Purpose**: calibrates the plan writer and the validator. `/bpe:plan` reads it to pitch step granularity to what the user already knows; the `bpe:validator` agent reads it to weight findings against the user's stated familiarity.
+
+## Available Tooling Section (spec.md)
+
+The tool discovery pass in `/bpe:brainstorm` (Tool discovery section) and `/bpe:retrofit` (procedure step 4) records the user's confirmed validator tooling in spec.md.
+This section is the canonical definition of that record; both skills conform to it.
+
+- **Format**: an H2 heading, `## Available tooling`, followed by one intro sentence, then labeled fields in this order: `**MCPs:**` (bullet list), `**Skills:**` (bullet list), `**Verification command:**` (optional single line, see below), `**Notes:**` (free-form validator guidance). Empty MCP and skill lists are valid; the section still exists so plan.md has a known structure to read.
+- **Placement**: after `## Project overview`, before the detailed requirements in spec.md.
+- **Purpose**: `/bpe:plan` propagates the MCP and skill lists to per-section `**Validator consults:**` declarations in plan.md; `/bpe:goal` passes them to the `bpe:validator` agent when dispatching it.
+- **Verification command field**: a single line, `**Verification command:** <command>`, e.g. `**Verification command:** vale docs/`. Written only when the project's tech stack matches none of the test-runner manifests `/bpe:goal` autodetects (pyproject.toml, package.json, Cargo.toml, go.mod). `/bpe:goal`'s pre-flight resolves its verification command through a cascade: manifest autodetect, then this field, then asking the user. Exit 0 of the resolved command is the goal condition's success signal, so the command must succeed only when the work is verifiably done.

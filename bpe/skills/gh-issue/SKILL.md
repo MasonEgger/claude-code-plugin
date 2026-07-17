@@ -1,6 +1,9 @@
 ---
+name: gh-issue
 description: Fetch a GitHub issue and route to brainstorm or plan based on detail level
 allowed-tools: Bash(gh:*), Read, Write, Glob, Grep
+model: sonnet
+disable-model-invocation: true
 ---
 
 # GitHub Issue Command

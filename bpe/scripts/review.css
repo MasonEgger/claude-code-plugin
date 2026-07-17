@@ -645,6 +645,16 @@ body {
 .review-comment::placeholder {
   color: var(--text-muted);
 }
+/* Locked while "Ship it" is selected: the decision-sync script disables and
+   clears the box so no comment can be saved where apply-review never reads one. */
+.review-comment:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  resize: none;
+}
+.review-comment:disabled::placeholder {
+  color: transparent;
+}
 
 /* Final "overall" section: comment spans full width, no decision control. */
 .review-section--global .review-controls {

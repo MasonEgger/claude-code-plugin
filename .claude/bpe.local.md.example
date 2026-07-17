@@ -1,0 +1,45 @@
+---
+# Which profile is live. Must name a key under profiles: below; a name with
+# no matching key contributes no overrides and everything falls back to
+# skill/agent frontmatter defaults.
+# The BPE_PROFILE environment variable, when set, overrides this field in
+# every settings file (shell-scoped switching: `BPE_PROFILE=work claude`).
+active_profile: personal
+
+# Named profiles. Names are yours to choose; `personal` and `work` are the
+# conventional pair. Each profile carries optional skills: and agents: maps.
+profiles:
+  personal:
+    # Skill overrides. Keys are bare skill names as they appear in
+    # bpe/skills/<name>/SKILL.md (`brainstorm`, not `bpe:brainstorm`).
+    # Values accept anything the SKILL.md model: field accepts: a family
+    # alias (opus, sonnet, haiku) or an explicit pinned model ID.
+    # Skills you leave out fall back to their frontmatter model: default,
+    # so list only the overrides that differ.
+    skills:
+      brainstorm: claude-opus-4-7        # pinned ID: always this exact model
+      apply-review: claude-opus-4-7
+    # Agent overrides. Keys are bare agent names as they appear in
+    # bpe/agents/<name>.md (`validator`, not `bpe:validator`).
+    agents:
+      validator: claude-opus-4-7
+  work:
+    skills:
+      brainstorm: opus                    # alias: latest available Opus here
+      apply-review: opus
+    agents:
+      validator: opus
+---
+
+# BPE Profile Settings
+
+Copy this file to `~/.claude/bpe.local.md` (user-global) or to `.claude/bpe.local.md` at a repo root (per-project), dropping the `.example` suffix, then edit the frontmatter above.
+The per-project file shadows the user-global one key by key: a lookup that misses in the per-project file falls through to the user-global file before falling back to frontmatter.
+The active profile name is resolved once (BPE_PROFILE, else the per-project file's `active_profile`, else the user-global file's) and selects the profile in both files.
+
+This body is free-form notes; model resolution reads only the frontmatter.
+
+The real settings file is user-local state.
+Never commit it: add `.claude/*.local.md` to your `.gitignore`.
+
+Canonical schema and lookup precedence: `bpe/references/model-profiles.md` in the BPE plugin.

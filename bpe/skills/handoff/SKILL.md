@@ -1,6 +1,9 @@
 ---
+name: handoff
 description: Create, continue, or close handoff documents for fresh-agent baton passes
 argument-hint: create [focus] | continue | close
+model: sonnet
+disable-model-invocation: true
 ---
 
 # Handoff Command

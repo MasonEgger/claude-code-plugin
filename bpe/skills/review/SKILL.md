@@ -1,6 +1,9 @@
 ---
+name: review
 description: Render spec.md, plan.md, or todo.md as a fine-grained, decision-by-decision review page in your browser, then write the feedback as JSON for /bpe:apply-review to consume.
 argument-hint: spec | plan | todo (defaults to most recent)
+model: opus
+disable-model-invocation: true
 ---
 
 # Review Command
@@ -89,25 +92,25 @@ Emit this skeleton. Repeat decision-unit `<section>`s freely; wrap clusters in a
         <footer class="review-controls">
           <fieldset class="decision">
             <legend class="sr-only">Decision for this unit</legend>
-            <label class="decision__opt decision__opt--ship">
+            <label class="decision__opt decision__opt--ship" title="Accept as-is. The unit is left untouched; no comment is saved.">
               <input type="radio" name="decision-section-1" data-section-decision="section-1" value="ship">
               <span>Ship it</span>
             </label>
-            <label class="decision__opt decision__opt--update">
+            <label class="decision__opt decision__opt--update" title="Right direction. Your comment is applied as a tweak; the unit's structure is preserved.">
               <input type="radio" name="decision-section-1" data-section-decision="section-1" value="update">
               <span>Close, but update</span>
             </label>
-            <label class="decision__opt decision__opt--redirect">
+            <label class="decision__opt decision__opt--redirect" title="Wrong approach. The unit is rewritten from your comment; its current content is discarded.">
               <input type="radio" name="decision-section-1" data-section-decision="section-1" value="redirect">
               <span>Completely off, do this instead</span>
             </label>
-            <label class="decision__opt decision__opt--reject">
+            <label class="decision__opt decision__opt--reject" title="Delete the unit entirely.">
               <input type="radio" name="decision-section-1" data-section-decision="section-1" value="reject">
               <span>Absolutely reject and delete</span>
             </label>
           </fieldset>
           <textarea class="review-comment" data-section-comment="section-1" rows="2"
-                    placeholder="Comments for this unit — required for Close, but update / Completely off, do this instead / Absolutely reject and delete"></textarea>
+                    placeholder="Comments for this unit. Required for Close, but update / Completely off / Absolutely reject. Ship it locks this box."></textarea>
         </footer>
       </section>
 
@@ -143,10 +146,10 @@ Hard requirements (do not deviate — the save script and stylesheet key off the
 - **Decision unit:** `<section>` carries `id="section-N"` **and** `data-section-id="section-N"` (same value) plus `data-section-heading="<exact heading>"`, and ends with a `<footer class="review-controls">`. Its TOC link uses `data-toc-for="section-N"`.
 - **Heading divider:** `<section id="group-N" class="review-section review-section--heading">` with body only — **no** `data-section-id` and **no** `<footer class="review-controls">`. The absence of `data-section-id` is what excludes the divider from the JS that counts decided units and collects feedback, so you don't need any extra opt-out class — just leave the attribute off. Its TOC group label uses `data-toc-for="group-N"` and class `review-toc__grouplink`.
 - The four radios per unit carry `name="decision-section-N"`, `data-section-decision="section-N"`, and the four `value`s **exactly**: `ship`, `update`, `redirect`, `reject` — paired with classes `decision__opt--ship`, `--update`, `--redirect`, `--reject` and labels "Ship it", "Close, but update", "Completely off, do this instead", "Absolutely reject and delete".
-- The per-unit comment is `<textarea class="review-comment" data-section-comment="section-N">`; the final global one is `<textarea id="global-comment" class="review-comment">`. The save script blocks the reviewer from saving if any unit decided as `update`, `redirect`, or `reject` has an empty comment — `apply-review` has nothing to act on without one, and we'd rather catch that at Save time than mid-apply.
+- The per-unit comment is `<textarea class="review-comment" data-section-comment="section-N">`; the final global one is `<textarea id="global-comment" class="review-comment">`. The save script blocks the reviewer from saving if any unit decided as `update`, `redirect`, or `reject` has an empty comment — `apply-review` has nothing to act on without one, and we'd rather catch that at Save time than mid-apply. The inverse holds for `ship`: the injected script disables and clears the comment box while Ship it is selected, because `apply-review` leaves shipped units untouched and a comment there would never be read.
 - The save button is `<button id="bpe-save-btn">`. In the progress line, replace "N" with the count of **decision units** (sections that have buttons — exclude heading dividers and the Overall block).
 
-**Do NOT generate the save fetch logic, the scroll-spy, the progress bar, or the decision-state coloring.** The server injects standardized JavaScript that wires `#bpe-save-btn` to collect feedback and POST to `/save`, highlights the active TOC entry on scroll, drives `.reading-progress`, and stamps `data-decision` onto units and TOC dots as the reviewer chooses. Generating your own will conflict.
+**Do NOT generate the save fetch logic, the scroll-spy, the progress bar, or the decision-state coloring.** The server injects standardized JavaScript that wires `#bpe-save-btn` to collect feedback and POST to `/save`, highlights the active TOC entry on scroll, drives `.reading-progress`, stamps `data-decision` onto units and TOC dots as the reviewer chooses, and locks a unit's comment box while Ship it is selected. Generating your own will conflict.
 
 ### Filling in the content
 
@@ -163,11 +166,13 @@ Render the markdown faithfully inside each `.prose` block — headings (`<h3>`/`
 
 ## Step 3: Write the HTML and Start the Server
 
-Create the HTML file at a unique path:
+Generate a unique path for the HTML file. The `-u` flag makes `mktemp` print a name **without creating the file**; this matters because the Write tool refuses to overwrite an existing file it has not Read, so a pre-created empty file makes the very next Write call fail.
 
 ```bash
-mktemp -t bpe-review-XXXXXX.html
+mktemp -u -t bpe-review-XXXXXX.html
 ```
+
+Then create the file at that path with the Write tool.
 
 Compute the feedback path by replacing `.html` with `-feedback.json` on the same path.
 

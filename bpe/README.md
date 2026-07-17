@@ -11,7 +11,8 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | Command | Purpose |
 |---|---|
 | `/bpe:brainstorm` | Iterative Q&A to develop a project specification (`spec.md`) |
-| `/bpe:plan` | Transform spec into implementation roadmap (`plan.md` + `todo.md`) |
+| `/bpe:retrofit` | Retrofit a BPE-compatible `spec.md` onto an existing project that lacks one. Reads repo state, runs a shortened Q&A on the gaps; pass `--replace` to overwrite an existing spec |
+| `/bpe:plan` | Transform spec into implementation roadmap (`plan.md` + `todo.md`). Refuses when `plan.md` already exists: pass `--archive` to preserve it under `.ai-sessions/` before regenerating, or `--regen` to discard and regenerate. Dispatches `bpe:cheap-research` for external tool discovery by default; pass `--no-discover` to skip it |
 | `/bpe:execute-plan` | Implement one step at a time following strict TDD |
 | `/bpe:gh-issue` | Fetch a GitHub issue and route to brainstorm or plan |
 | `/bpe:commit-message` | Generate a commit message explaining what was changed |
@@ -22,6 +23,18 @@ This plugin packages the BPE loop - a structured workflow for building software 
 | `/bpe:lessons` | View, search, and manage accumulated lessons |
 | `/bpe:wtf-wid` | WTF was I doing? Tight, fits-on-screen recap of the current session for fast re-entry |
 | `/bpe:goal` | Wrap the BPE loop in a `/goal`-driven autonomous run. Pre-flights safety, writes the `/goal` argument to `goal.md` — run with `/goal @goal.md` |
+
+As of 0.6.0, BPE commands are implemented as skills.
+Invocation is unchanged: each `/bpe:<name>` above works exactly as before.
+The underlying file layout moved from `commands/<name>.md` to `skills/<name>/SKILL.md`.
+
+## Agents
+
+| Agent | Model | Purpose |
+|---|---|---|
+| `bpe:step-executor` | inherit | Worker for `/bpe:goal` autonomous runs. Executes one plan step per dispatch in `implement`, `fix`, or `finalize` mode. |
+| `bpe:validator` | inherit | Read-only QA reviewer dispatched between `implement` and `finalize`. Checks the uncommitted diff against declared skills and MCPs, returns a structured findings block. |
+| `bpe:cheap-research` | haiku | Fast, cheap external research: tool discovery, docs lookup, quick fact-checks. Dispatched by `/bpe:plan`, `/bpe:brainstorm`, and `/bpe:retrofit` when they need external info. |
 
 ## The BPE Loop
 
@@ -80,6 +93,26 @@ Three hard contracts the orchestrator enforces:
 - **Exactly one commit per dispatch.** No follow-ups, no fixups, no amends, no `--no-verify`. If a subagent discovers something needs fixing after its commit lands, that's a `Failure:` — the orchestrator does NOT make the follow-up.
 
 Put your session into auto mode before pasting so subagent tool calls don't prompt you mid-loop. The exact mechanism depends on your client (TUI users typically toggle this with a keyboard shortcut).
+
+## Per-user model profiles
+
+Skills and agents ship with fixed `model:` tiers in their frontmatter.
+A `.claude/bpe.local.md` settings file overrides those defaults per skill and per agent, grouped into named profiles you switch per machine, per project, or per shell.
+The canonical schema and lookup precedence live in [references/model-profiles.md](references/model-profiles.md).
+
+Quick start:
+
+1. Copy [`.claude/bpe.local.md.example`](../.claude/bpe.local.md.example) from this repo's root to `~/.claude/bpe.local.md` (user-global) or to `.claude/bpe.local.md` in a project (per-project; shadows the user-global file key by key).
+2. Set `active_profile` to the profile you want live.
+3. Add per-skill or per-agent overrides under that profile. Values are family aliases (`opus`, `sonnet`, `haiku`) or pinned model IDs (`claude-opus-4-7`). Anything you leave out falls back to the frontmatter default, so list only what differs.
+
+The `BPE_PROFILE` environment variable switches profiles per shell: `BPE_PROFILE=work claude` selects the `work` profile for that session regardless of what the files say.
+
+When you invoke a `/bpe:` skill, the `profile-check` hook ([hooks/profile-check.md](hooks/profile-check.md)) compares the profile-resolved model against the current session model and warns on mismatch, suggesting `/model <X>` before proceeding.
+It never blocks; the skill runs either way.
+
+The real settings file is user-local state and must not be committed.
+Keep `.claude/*.local.md` in your `.gitignore` (this repo's covers it).
 
 ## Installation
 
