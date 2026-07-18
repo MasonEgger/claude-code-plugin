@@ -56,6 +56,17 @@ printf '{"prompt":"/bpe:brainstorm","cwd":"<repo-with-.claude/bpe.local.md>"}' |
 
 # Garbage stdin: expect no output, exit 0.
 echo "not json" | python3 bpe/hooks/profile-check.py
+
+# /bpe: mentioned mid-prompt is NOT an invocation: expect no output, exit 0.
+# Detection uses re.match, anchored to the start of the prompt.
+printf '{"prompt":"explain what /bpe:brainstorm does before I run it","cwd":"."}' | python3 bpe/hooks/profile-check.py
+
+# /bpe: at the start of a later line is also not an invocation: expect no output, exit 0.
+printf '{"prompt":"first line\\nthen /bpe:plan on line two","cwd":"."}' | python3 bpe/hooks/profile-check.py
+
+# Leading whitespace or newlines before /bpe: IS an invocation per the
+# "after optional leading whitespace" rule: expect JSON when a profile file exists.
+printf '{"prompt":"\\n  /bpe:goal full","cwd":"<repo-with-.claude/bpe.local.md>"}' | python3 bpe/hooks/profile-check.py
 ```
 
 Also run `claude plugin validate ./bpe` and confirm exit 0, and inspect loaded hooks in-session with `/hooks`.
