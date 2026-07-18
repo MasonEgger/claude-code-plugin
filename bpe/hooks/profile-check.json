@@ -1,14 +1,14 @@
 {
-  "description": "Model-profile warning on /bpe:<name> invocations. Canonical hook body and documentation: hooks/profile-check.md. Resolution semantics: references/model-profiles.md.",
+  "description": "Model-profile warning on /bpe:<name> invocations. Canonical hook body: hooks/profile-check.py. Documentation: hooks/profile-check.md. Resolution semantics: references/model-profiles.md.",
   "hooks": {
     "UserPromptSubmit": [
       {
         "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "You are screening a just-submitted user prompt for the BPE plugin's model-profile check. The submitted prompt text is:\n\n$USER_PROMPT\n\nA BPE invocation starts, after optional leading whitespace, with '/bpe:' followed by a skill name made of letters, digits, and hyphens (for example '/bpe:brainstorm').\n\nIf the prompt is NOT a BPE invocation, respond with exactly: {}\n\nIf the prompt IS a BPE invocation, extract the skill name (the characters between '/bpe:' and the first whitespace character, or the end of the prompt) and respond with exactly this JSON, substituting the extracted name for <name> everywhere it appears:\n\n{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"Model-profile check for bpe skill '<name>'. Before executing the skill, resolve its profile model per the bpe plugin's references/model-profiles.md: (1) If neither .claude/bpe.local.md at the repo root nor ~/.claude/bpe.local.md exists, skip this check silently; frontmatter defaults apply. (2) Resolve the active profile name once: the BPE_PROFILE environment variable when set (check it with a Bash echo of BPE_PROFILE), else active_profile in the per-project file, else in the user-global file. (3) Look up skills.<name> under that profile in the per-project file, falling through to the user-global file (shadowing is key-level). If no entry exists, skip silently; the skill's frontmatter model applies. (4) Compare the resolved value to the current session model; a family alias (opus, sonnet, haiku) matches any session model of that family. (5) Only on mismatch, state before proceeding: Note: skill <name> profile expects model <X>; current session is <Y>. Consider /model <X> before proceeding. Then continue with the skill either way.\"}}",
-            "timeout": 30
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/profile-check.py\"",
+            "timeout": 10
           }
         ]
       }
