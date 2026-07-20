@@ -16,6 +16,7 @@
 - Paid for the template additions with prose trims; assembled goal.md now measures ~3711 chars against the 4000 cap (was 3831 before, with less content).
 - Swept the drift the audit surfaced: stale info-findings mechanism wording and the duplicated "shadows the section default" bug in validator-protocol.md and plan/SKILL.md, legacy Notes boilerplate in brainstorm and retrofit, session-management.md line still naming the old declaration, Finalize-Report `Status:` domain mismatch between protocol doc and agent, TDD-only wording in README and gh-issue, README agents table showing "inherit" instead of sonnet/opus, README mermaid diagram still showing the pre-0.5 bundled flow, orphaned "Fable model ID" comments in model-profiles.md and spec.md, stale handoff Read-before-Write instruction, commit-message step-order incoherence, and apply-review's `/tmp` glob now honoring `$TMPDIR`.
 - Bumped plugin version to 0.6.2; `claude plugin validate ./bpe` passes and all 16 frontmatters parse.
+- Follow-up commit: the audit's `py_compile` checks left `__pycache__/` .pyc files that the first commit swept up; untracked them and added `__pycache__/` to `.gitignore`.
 
 ## Prompt Inventory
 
