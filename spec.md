@@ -496,7 +496,7 @@ The 0.6.0 release converges when all of the following hold.
 7. `/bpe:goal` runs a non-code project autonomously using a `spec.md`-declared `**Verification command:**`.
 8. `bpe:validator` emits Vale-sourced findings on a prose project with `Linters: vale ...` in the Tools block.
 9. `.ai-sessions/<slug>/` archive directories exist for completed plans, with `plan.md`, `todo.md`, and `accomplishment.md`.
-10. Subagent frontmatter enforces model tiers: `step-executor: sonnet`, `validator: opus`, `cheap-research: haiku`. Skill frontmatter enforces per-turn tier per the Goal 11 table. `.claude/bpe.local.md` profile system supports per-skill and per-subagent overrides with `active_profile:` toggle and `BPE_PROFILE` env var. Personal profile can pin specific skills to a Fable model ID; work profile defaults to `opus` alias.
+10. Subagent frontmatter enforces model tiers: `step-executor: sonnet`, `validator: opus`, `cheap-research: haiku`. Skill frontmatter enforces per-turn tier per the Goal 11 table. `.claude/bpe.local.md` profile system supports per-skill and per-subagent overrides with `active_profile:` toggle and `BPE_PROFILE` env var. Personal profile can pin specific skills to an explicit model ID; work profile defaults to `opus` alias.
 11. `bpe/.claude-plugin/plugin.json` version bumped to 0.6.0.
 
 ## Out of scope (future work, tracked)
